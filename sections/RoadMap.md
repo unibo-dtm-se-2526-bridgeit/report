@@ -1,12 +1,57 @@
 # Roadmap del Progetto e Assegnazione Task
 
-Questa roadmap definisce gli obiettivi settimanali per il team e **opera concretamente le Milestone già definite in `report.md` (sezione Roadmap)**: non è un piano alternativo, ma la traduzione di quelle milestone in task settimanali assegnati a persona, con sotto-task a livello principiante.
+Questa roadmap definisce gli obiettivi settimanali per il team e **opera concretamente le Milestone già definite in `report.md` (sezione Roadmap)**: non è un piano alternativo, ma la traduzione di quelle milestone in task settimanali assegnati a persona, con sub-task.
 
 **Squadra:**
 - `@nikytresca` — Sviluppatrice di moduli e IA (Domain Layer, AI Gateway)
 - `@marthinaf03` — Sviluppatore di dati e API (Persistenza, FastAPI)
 
 **Durata:** 4 settimane.
+
+---
+
+## Aggiornamento — Organizzazione GitHub e nuove richieste del professore
+
+Da qui in avanti la roadmap tiene conto di due informazioni nuove, arrivate dopo la stesura iniziale:
+
+1. **L'organizzazione GitHub esiste già**: [`unibo-dtm-se-2526-bridgeit`](https://github.com/unibo-dtm-se-2526-bridgeit). Contiene (o conterrà) sia il repository `artifact` (codice) sia il repository `report` (documentazione). Il compito non è più "creare l'organizzazione", ma **migrare la documentazione già scritta in `artifact/docs/` dentro il repository `report`**, rispettandone la struttura ufficiale a 12 sezioni numerate.
+2. **Il professore ha richiesto due modifiche di merito** durante la revisione della sezione Concetto: (a) includere la gestione utenti (user management) nello scope del progetto, precedentemente escluso; (b) specificare **SQLite** come tecnologia di persistenza concreta, non più generica. Queste modifiche toccano `domain-model.md`, `architecture.md` e `report.md` e vanno tracciate esplicitamente prima di essere implementate in codice.
+
+Entrambi i punti sono dettagliati nelle due checklist qui sotto. Sono trasversali alle 4 settimane già pianificate: vanno risolti a livello di documentazione **prima o in parallelo** alla Settimana 1, così che il codice scritto nelle settimane successive parta da una documentazione già coerente.
+
+### A. Migrazione della documentazione nel repository `report`
+
+Il repository `report` richiede la seguente struttura a 12 sezioni numerate. Per ciascuna, indico se il contenuto esiste già (e dove) o se va scritto da zero.
+
+- [✅] **01-concetto** —   `Concept.md` (bozza già scritta, con tipologia di prodotto e casi d'uso). Da rifinire con le due modifiche richieste dal professore (vedi checklist B) prima di considerarlo definitivo.
+- [] **02-requisiti** — ✅ Contenuto in gran parte pronto: da `report.md` (Problem Statement, Domain Terminology, Project Objectives/FR/NFR, User Stories, Scope, Stakeholders). Da integrare con il nuovo FR per lo user management (vedi checklist B).
+- [ ] **03-design** — ✅ Contenuto in gran parte pronto: da `architecture.md` (Architectural Drivers, Architecture, AI Architecture, Adapter Responsibilities) e `domain-model.md` (Domain Model completo). Da aggiornare con la nuova entità `User` e la scelta di SQLite (vedi checklist B).
+- [ ] **04-sviluppo** — ⚠️ Parzialmente pronto: `report.md` (Development Methodology) e `architecture.md` (Proposed Package Structure) coprono i principi, ma vanno integrati con le istruzioni pratiche di setup già scritte nel README del repository `artifact` (Poetry, `poe`, comandi di test/lint).
+- [ ] **05-validazione** — ✅ Contenuto pronto: `report.md` — Testing Strategy (unit/integration/acceptance, test pyramid, catena FR→US→Test Case).
+- [ ] **06-release** — ✅ Contenuto pronto: `report.md` — Version Control Convention e License. Da integrare, quando disponibile, con l'esito reale della prima release via CI/CD.
+- [ ] **07-dispiegamento** — ❌ Da scrivere: nessun contenuto esiste ancora. `report.md` — Current Limitations dichiara esplicitamente "no production deployment exists"; questa sezione andrà scritta solo quando (e se) un deployment reale verrà pianificato.
+- [ ] **08-cicd** — ✅ Contenuto pronto: `report.md` — Continuous Integration and Continuous Delivery (pipeline GitHub Actions pianificata).
+- [ ] **09-guida utente** — ❌ Da scrivere: richiede che almeno gli endpoint FastAPI siano implementati (Settimana 4). Non anticipare contenuti prima che esistano.
+- [ ] **10-devguide** — ⚠️ Parzialmente pronto: il README del repository `artifact` contiene già le istruzioni di setup (Poetry, `poe test`, `poe static-checks`); vanno solo trasferite e adattate al contesto del repository `report`.
+- [ ] **11-autovalutazione** — ❌ Da scrivere a fine progetto: si baserà su `report.md` — Current Limitations and Future Challenges e Conclusion, confrontando quanto pianificato con quanto realmente implementato (coerente con il task già previsto in Settimana 4).
+- [ ] **12-futuro** — ✅ Contenuto pronto: `report.md` — Current Limitations and Future Challenges copre già puntualmente le direzioni di lavoro futuro; da adattare al formato della sezione.
+
+### B. Modifiche di merito richieste dal professore (User Management + SQLite)
+
+- [ ] **`domain-model.md`**
+  - [ ] Rimuovere, in *Modeling Assumptions and Boundaries*, la frase che dichiara fuori scope l'autenticazione/user management.
+  - [ ] Aggiornare la nota sull'attribuzione in `ValidationDecision`, che rimandava la questione dell'identità a "quando l'identity management verrà definito nello scope" — ora è il momento.
+  - [ ] Aggiungere una nuova entità `User` (o simile) in *Domain Entities*, con un attributo di ruolo (Business Stakeholder / Requirements Engineer / Software Engineer). Decidere se è un aggregato indipendente o collegato a `ValidationDecision`.
+  - [ ] Estendere il diagramma Mermaid e la tabella *Ubiquitous Language* di conseguenza.
+- [ ] **`architecture.md`**
+  - [ ] Aggiornare *Repository Pattern*, *Proposed Package Structure* e *Adapter Responsibilities* per nominare esplicitamente **SQLite** al posto di "tecnologia di storage non ancora decisa".
+  - [ ] Valutare una seconda porta/adapter dedicata (User Repository), distinta da quella per `Requirement`.
+  - [ ] Aggiungere in *API Design* gli endpoint per la gestione utenti (creazione utente, login), una volta decisi i dettagli.
+- [ ] **`report.md`**
+  - [ ] *Scope*: esplicitare che lo user management è ora incluso.
+  - [ ] *Functional Requirements*: aggiungere almeno un nuovo FR (es. FR-08) per la gestione account/ruolo, per non lasciare la catena FR→User Story→Test Case incompleta.
+  - [ ] *Technologies*: aggiungere una riga per **SQLite**.
+  - [ ] *Roadmap*: aggiornare la Milestone 3 (persistenza) per riflettere SQLite fin da subito, ed eventualmente prevedere l'user management in una milestone.
 
 ---
 
@@ -25,11 +70,10 @@ Questa roadmap definisce gli obiettivi settimanali per il team e **opera concret
 
 ### `@nikytresca`
 
-- [ ] **Creare l'Organizzazione GitHub e trasferire i repository**, coerentemente con la sezione "Repository Organization" del `README.md`.
-  - [ ] Creare l'organizzazione GitHub condivisa dal team.
-  - [ ] Spostare/collegare il repository `artifact` (codice) e il repository `report` (già esistente: https://github.com/nikytresca-pixel/report) sotto l'organizzazione.
-  - [ ] Aggiornare in `README.md` il link `[GITHUB REPOSITORY LINK]` con l'URL definitivo.
-  - [ ] Aggiungere `@marthinaf03` come collaboratore su entrambi i repository.
+- [ ] **Migrare la documentazione nel repository `report`**, sotto l'organizzazione [`unibo-dtm-se-2526-bridgeit`](https://github.com/unibo-dtm-se-2526-bridgeit), seguendo la checklist dettagliata in *Migrazione della documentazione nel repository `report`* qui sopra.
+  - [ ] Verificare che sia `artifact` sia `report` siano già sotto l'organizzazione; in caso contrario, spostarli.
+  - [ ] Aggiornare in `README.md` (repository `artifact`) il link `[GITHUB REPOSITORY LINK]` con l'URL definitivo del repository `report`.
+  - [ ] Aggiungere `@marthinaf03` come collaboratore su entrambi i repository, se non già presente.
 
 - [ ] **Sviluppare in Python solo l'Aggregate Root `Requirement` e il Domain Layer** (vedi `domain-model.md` — sezione Domain Entities e Aggregate Boundary).
   - [ ] Creare il package `domain/` nel repository `artifact`.
