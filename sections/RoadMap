@@ -1,0 +1,32 @@
+# 🗓️ Roadmap del Progetto e Assegnazione Task
+
+Questa roadmap definisce gli obiettivi settimanali per il team.
+**Team:**
+* 👩‍💻 **@nikytresca** (Modules & AI Developer)
+* 👩‍💻 **@marthinaf03** (Data & API Developer)
+
+---
+
+### Settimana 1: Setup e Dominio
+- [x] **@nikytresca:** Creare l'Organizzazione GitHub e trasferire i repository.
+- [ ] **@nikytresca:** Sviluppare in Python puro l'Aggregate Root `Requirement` e il Domain Layer.
+- [ ] **@marthinaf03:** Setup del progetto FastAPI base con Poetry.
+- [ ] **@marthinaf03:** Creare le interfacce (Ports) per il Database e definire i modelli Pydantic.
+
+### Settimana 2: Motore AI e Database
+- [ ] **@nikytresca:** Sviluppare l'Adapter per l'AI (connessione a Gemini/OpenRouter).
+- [ ] **@nikytresca:** Implementare il meccanismo di **Cache** per l'AI per risparmiare token.
+- [ ] **@marthinaf03:** Sviluppare l'Adapter per **SQLite** usando il pattern Repository.
+- [ ] **@marthinaf03:** Scrivere i test per verificare il salvataggio su database locale.
+
+### Settimana 3: Use Cases e Integrazione
+- [ ] **@nikytresca:** Sviluppare gli *Use Cases* (Application Layer) che collegano Dominio e AI.
+- [ ] **@nikytresca:** Scrivere i test di business logic (raggiungere un'alta Coverage).
+- [ ] **@marthinaf03:** Creare le rotte FastAPI (Endpoints) che richiamano gli Use Cases.
+- [ ] **@marthinaf03:** Verificare il funzionamento completo tramite l'interfaccia Swagger UI.
+
+### Settimana 4: Report e Rifiniture Finali
+- [ ] **@nikytresca:** Redigere la sezione architetturale del Report (DDD, Ports & Adapters).
+- [ ] **@nikytresca:** Revisione finale della CI/CD (GitHub Actions).
+- [ ] **@marthinaf03:** Scrivere la sezione del Report relativa ai test e alla persistenza.
+- [ ] **@nikytresca e @marthinaf03:** Test end-to-end del prototipo completo prima della consegna.
