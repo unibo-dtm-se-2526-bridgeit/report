@@ -6,94 +6,131 @@ nav_order: 4
 
 # Design
 
-This chapter explains the strategies used to meet the requirements identified in the analysis. 
+This chapter describes the design of BridgeIT, the strategies adopted to satisfy the requirements identified during analysis, and the rationale behind the main technical choices.
 
-Ideally, the design should be the same, regardless of the technological choices made during the implementation phase.
+## Architecture
 
-> You can re-order the sections as you prefer, but all the sections must be present in the end
+BridgeIT adopts a **Hexagonal Architecture** (Ports and Adapters), combined with **Domain-Driven Design** principles for the core domain model.
 
-## Architecture 
+### Why Hexagonal Architecture
 
-- Which architectural style (e.g. layered, object-based, event-based, shared dataspace)? Why? Why not the others?
-- Provide details about the actual architecture (e.g. N-tier, hexagonal, etc.) you are going to adopt. Motivate your choice.
-- Provide a high-level overview of the architecture, possibly with a diagram
-- Describe the responsibilities of each architectural component
+A plain layered architecture was considered but discarded: in a layered style, the persistence and AI-provider details tend to leak upward into business logic (e.g. domain code importing a SQL library, or knowing about Gemini's response format). Hexagonal Architecture instead makes the domain and application layers depend on abstract **ports**, and pushes every concrete technology (SQLite, Google Gemini) to the edges as **adapters**. This was considered worth the extra indirection for two reasons specific to this project: the AI provider was expected to be revisited during development (the team did in fact switch Gemini models mid-project without touching any use case or domain code), and the domain rules around a requirement's lifecycle needed to be unit-testable without a database or network connection.
 
-> UML Components diagrams are welcome here
+### High-level overview
 
-## Infrastructure (mostly applies to distributed systems)
+Four layers, from the inside out:
 
-- Are there **infrastructural components** that need to be introduced? Which and **how many** of each?
-    - e.g. **clients**, **servers**, **load balancers**, **caches**, **databases**, **message brokers**, **queues**, **workers**, **proxies**, **firewalls**, **CDNs**, etc.
-- How do components **distribute** over the network? **Where** are they located?
-    - e.g. do servers / brokers / databases / etc. sit on the same machine? on the same network? on the same datacenter? on the same continent?
-- How do components **find** each other?
-    - How to **name** components?
-    - e.g. **DNS**, **service discovery**, **load balancing**, etc.
+1. **Domain** (`bridgeit/domain/`) — pure business logic and rules, no framework or infrastructure dependency.
+2. **Application** (`bridgeit/application/`) — use cases that orchestrate the domain, plus **ports**: abstract interfaces the application depends on but does not implement.
+3. **Adapters** (`bridgeit/adapters/`) — driving adapters that translate an external protocol into calls to use cases; currently a single **FastAPI** adapter.
+4. **Infrastructure** (`bridgeit/infrastructure/`) — driven adapters implementing the ports declared in the application layer: `SQLiteRequirementRepository` for persistence, `GeminiAIGateway` for the external AI service.
 
-> UML deployment diagrams are welcome here
+Dependency direction (always inward):
+
+```
+Adapters (FastAPI)  ─────depends on─────►  Application (Use Cases)  ─────depends on─────►  Domain
+                                                    ▲
+                                                    │ implements
+                                                    │
+Infrastructure (SQLite, Gemini)  ──────────────────┘
+```
+
+Nothing in `domain/` or `application/` imports from `adapters/` or `infrastructure/` — only the reverse. This is what allows the persistence technology and the AI provider to be swapped without touching business logic, and what makes the domain and use cases testable in isolation from any external system.
+
+### Responsibilities of each component
+
+- **Domain** — models `Requirement` as the aggregate root of the "requirement lifecycle" bounded context, together with its value objects and invariants (see Modelling below). Owns all business rules, including which status transitions are valid.
+- **Application / Use Cases** — one use case per user-facing action (`AnalyseRequirementUseCase`, `ValidateRequirementUseCase`, plus requirement submission/retrieval). A use case fetches a `Requirement` through its repository port, asks the domain to perform an operation, asks the AI gateway port for an analysis when needed, and persists the result. Use cases contain **no** HTTP or SQL code.
+- **Application / Ports** — abstract interfaces (`RequirementRepository`, `AIGateway`) defining *what* the application needs from the outside world, without saying *how*. `AIGatewayError` is the single error type use cases need to know about, regardless of which AI provider is behind it.
+- **Adapters (driving)** — the FastAPI routes in `bridgeit/adapters/api/` (`main.py`, `analysis_router.py`) translate incoming HTTP requests into use-case calls and translate results (or exceptions) back into HTTP responses. `errors.py` defines a single JSON error shape (`{"error": {"code", "message"}}`) shared by every endpoint, via `ApiError`.
+- **Infrastructure (driven)** — `SQLiteRequirementRepository` implements `RequirementRepository` on the standard-library `sqlite3` module; `GeminiAIGateway` implements `AIGateway` on Google's `google-genai` client library, including retry logic for transient failures (see Development chapter).
+
+## Infrastructure
+
+BridgeIT is **not a distributed system**: it runs as a single Python process (the FastAPI application) with an embedded SQLite database file on the same machine, serving a browser-based frontend running on the same host during development.
+
+The only component outside the process boundary is the **Google Gemini API**, called over HTTPS as a third-party dependency for AI-assisted requirement analysis. There is no load balancer, message broker, or service discovery: a single instance is sufficient for the scope of this academic project.
 
 ## Modelling
 
-### Domain driven design (DDD) modelling
+### Domain-driven design (DDD) modelling
 
-- Which are the bounded contexts of your domain? 
-- Which are domain concepts (entities, value objects, aggregates, etc.) for each context?
-- Are there repositories, services, or factories for each/any domain concept?
-- What are the relavant domain events in each context?
+The project has a single bounded context, **Requirement Lifecycle**, covering submission of a requirement, its AI-assisted analysis, and its human validation.
 
-> Context map diagrams are welcome here
+Domain concepts:
+
+- **`Requirement`** (entity / aggregate root) — identified by an id; holds a `RequirementText` and a `RequirementStatus`; the only object allowed to change its own status, and only through valid transitions (`Submitted → Analyzed → Validated / Clarified / Rejected`). An invalid transition raises `InvalidStateTransitionError`.
+- **`RequirementText`** (value object) — wraps the raw requirement text.
+- **`RequirementStatus`** (value object / enum) — the finite set of lifecycle states above.
+- **`AIAnalysis`** (value object) — the outcome of an AI analysis: a `QualityScore` plus a list of issues.
+- **`QualityScore`** (value object / enum) — `ready_for_validation` or `needs_clarification`. Deliberately a **binary category, not a numeric score**: a fabricated percentage would suggest a precision the AI analysis doesn't actually have.
+
+Repository: `RequirementRepository` is the single repository of the bounded context, with two implementations — `SQLiteRequirementRepository` for production and an in-memory fake for tests (see Validation chapter).
+
+No explicit domain events are used: the workflow is a simple, synchronous request/response cycle (submit → analyse → validate) rather than an event-driven one, so an event bus would add complexity without a corresponding benefit at this scale.
 
 ### Object-oriented modelling
 
-- What are the main data types (e.g. classes) of the system?
-- What are the main attributes and methods of each data type?
-- How do data types relate to each other?
-
-> UML class diagrams are welcome here
+| Type | Kind | Role |
+|---|---|---|
+| `Requirement` | Entity | Aggregate root; owns `RequirementText` + `RequirementStatus`; enforces transition rules |
+| `RequirementText` | Value object | Wraps requirement text |
+| `RequirementStatus` | Enum | Submitted / Analyzed / Validated / Clarified / Rejected |
+| `AIAnalysis` | Value object | Holds `QualityScore` + issues list |
+| `QualityScore` | Enum | ready_for_validation / needs_clarification |
+| `RequirementRepository` | Port (abstract) | save / get_by_id |
+| `AIGateway` | Port (abstract) | analyse(text) returns `AIAnalysis`; raises `AIGatewayError` |
+| `AnalyseRequirementUseCase` | Use case | Orchestrates repository + AI gateway for FR-02/FR-04 |
+| `ValidateRequirementUseCase` | Use case | Orchestrates repository + domain transition for FR-05 |
+| `SQLiteRequirementRepository` | Adapter (driven) | Implements `RequirementRepository` on plain `sqlite3` |
+| `GeminiAIGateway` | Adapter (driven) | Implements `AIGateway` on Google's `google-genai` client, with retry |
+| `ApiError` | Adapter (driving) | Shared exception, produces a structured JSON error response |
 
 ### In case of a distributed system
 
-- How do the domain concepts map to the architectural or infrastuctural components?
-    + i.e. which architectural/component is responsible for which domain concept?
-    + are there data types which are required onto multiple components? (e.g. messages being exchanged between components)
-
-- What are the domain concepts or data types which represent the state of the distributed system?
-    + e.g. state of a video game on central server, while inputs/representations on clients
-    + e.g. where to store messages in an instant-messaging app? for how long?
-
-- Are there domain concepts or data types which represent messages being exchanged between components?
-    + e.g. messages between clients and servers, messages between servers, messages between clients
+Not applicable — see Infrastructure above.
 
 ## Interaction
 
-- How do components *communicate*? *When*? *What*?
+All interaction is synchronous request/response over HTTP (FastAPI). The two most significant flows:
 
-- Which **interaction patterns** do they enact?
+**Analyse a requirement (FR-02, FR-04)** — `POST /requirements/{id}/analyse`
+1. The route handler calls `AnalyseRequirementUseCase.execute(id)`.
+2. The use case fetches the `Requirement` via `RequirementRepository`.
+3. It asks `AIGateway.analyse(text)` for an `AIAnalysis`.
+4. It persists the updated requirement via the repository.
+5. The route translates the result (or any `RequirementNotFoundError` / `InvalidStateTransitionError` / `AIGatewayError`) into the appropriate HTTP status and JSON body.
 
-> UML sequence diagrams are welcome here
+**Validate a requirement (FR-05)** — `POST /requirements/{id}/validate`
+1. The route handler calls `ValidateRequirementUseCase.execute(id, decision, modified_text)`.
+2. The use case fetches the `Requirement` and asks the domain to transition its status according to the decision (`approve` / `edit` / `reject`).
+3. It persists the result via the repository.
+4. The route translates the result or exception into an HTTP response.
 
 ## Behaviour
 
-- How does **each** component *behave* individually (e.g., in *response* to *events* or messages)?
-    + Some components may be *stateful*, others *stateless*
+`Requirement` is the only stateful domain object, and its state can only change through its own methods — never by an adapter setting a field directly. This is what lets `InvalidStateTransitionError` be raised consistently regardless of which adapter triggers the transition.
 
-- Which components are in charge of updating the **state** of the system? *When*? *How*?
+`GeminiAIGateway` is functionally stateless between calls, but wraps each call in **retry logic**: up to 3 attempts with a 1.5-second wait, only for transient errors (HTTP 429 rate-limit and 503 service-unavailable); a non-retryable error such as 401 (invalid key) fails immediately rather than wasting two more attempts on something that cannot succeed on retry (see Development chapter for the reasoning).
 
-> UML state diagrams or activity diagrams are welcome here
+State is updated and persisted synchronously, in the same request, immediately after each use case operation — there is no separate background process or job queue.
 
-## Data-related aspects (in case persistent storage is needed)
+## Data-related aspects
 
-- Is there any data that needs to be stored?
-    - *What* data? *Where*? *Why*?
+Persistent data is minimal by design: a single SQLite table stores each requirement's `id`, `text` and current `status`.
 
-- How should **persistent data** be **stored**? Why?
-    - e.g., relations, documents, key-value, graph, etc.
+```sql
+CREATE TABLE IF NOT EXISTS requirements (
+    id     TEXT PRIMARY KEY,
+    text   TEXT NOT NULL,
+    status TEXT NOT NULL
+);
+```
 
-- Which components perform queries on the database?
-    - *When*? *Which* queries? *Why*?
-    - Concurrent read? Concurrent write? Why?
+The result of an AI analysis (`quality_indication`, `issues`) is **not** persisted — it is returned directly in the API response and recomputed on demand the next time `/analyse` is called. This keeps the schema minimal and avoids the added complexity of invalidating a stored analysis if the requirement text later changes.
 
-- Is there any data that needs to be shared between components?
-    - *Why*? *What* data?
+Plain `sqlite3` (standard library) was chosen over an ORM such as SQLAlchemy to keep the persistence adapter as thin as possible: the goal of Hexagonal Architecture is for infrastructure to be swappable, and a thin adapter with no ORM-specific base classes leaking into the domain achieves that more directly than an ORM would, at the scale of this project.
 
+Only the persistence adapter (`SQLiteRequirementRepository`) ever queries the database, and it is reached exclusively through the `RequirementRepository` port — never called directly by a use case or a route (with the exception of a temporary, explicitly flagged shortcut in `main.py`'s pre-existing `/requirements` routes, predating the AI Gateway work, earmarked for the same refactor).
+
+Concurrent access is handled by SQLite itself (file-level locking); the project's scope — a single local instance used by one Business Analyst at a time — does not require any additional concurrency handling on top of that.
