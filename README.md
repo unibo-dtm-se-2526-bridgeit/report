@@ -1,146 +1,125 @@
-# Project work final report template
+# BridgeIT — Software Engineering Project Report
 
-[This repository][template-repo] contains a template Software Engineering (SE) reports.
+> **Status:** Work in progress
 
-It has been conceived to be used by students of the [Software Engineering course][course-site] 
-for their project work.
+BridgeIT is an AI-assisted Requirements Engineering platform developed for the **Software Engineering** course of the **Digital Transformation Management** degree programme at the University of Bologna.
 
-By adopting this template, students can _automatically_ generate a _static_ Web-site,
-which will present their report in fancy way.
-Consider, for example, the [site generated from this template][template-site].
+The project supports the Requirement lifecycle from submission to AI-assisted quality analysis and explicit Business Analyst validation. AI suggestions assist the process, but the final decision remains human-controlled.
 
-To fill the template, students have to put their contents, [in Markdown format][markdown-cheatsheet], 
-into the `sections` directory.
+## Project links
 
-The generation of the Web-site is _automatically_ performed by means of GitHub Actions.
+- [Published report](https://unibo-dtm-se-2526-bridgeit.github.io/report/)
+- [Software artifact](https://github.com/unibo-dtm-se-2526-bridgeit/BridgeIT-artifact)
+- [Report repository](https://github.com/unibo-dtm-se-2526-bridgeit/report)
+- [GitHub organization](https://github.com/unibo-dtm-se-2526-bridgeit)
 
-Locally, students may visualise a preview of the Web-site by means of [Jekyll][jeckyll-home].
+## Team
 
-In the following, we provide a number of instruction for using the template,
-and for producing the final report.
+- **Nicole Tresca** — `@nikytresca`
+- **Martina Fava** — `@marthinaf03`
 
-Please read them carefully, and post any question or clarification request on the 
-course's [General forum][general-forum].
+## Project overview
 
-## Recommended workflow for the project work
+BridgeIT provides a structured workflow for:
 
-1. Find colleagues to work with (1-4 people, exceptions should be negotiatied with the teacher)
+1. submitting a Requirement;
+2. storing and retrieving Requirements;
+3. requesting an AI-assisted quality analysis;
+4. reviewing issues detected by the AI provider;
+5. validating, clarifying, editing, or rejecting a Requirement through an explicit Business Analyst decision.
 
-2. Choose a project idea and post a project proposal on the course's [Project forum][project-forum]
-    * please provide a __catchy__ and __concise name__ for the project
-    * please provide a _brief abstract_ of the project
-    * please include the _names_, and __email addresses__ of the team members
+The AI assessment is intentionally qualitative and binary:
 
-3. Wait for the teacher's approval
+- `ready_for_validation`;
+- `needs_clarification`.
 
-4. Create a GitHub organization for the project:
+The system does not expose a fabricated numerical confidence score.
 
-    !["New organization" button on GitHub](pictures/github-new-org.png)
+## Architecture and technologies
 
-    1. you should name the organization as follows: `unibo-dtm-se-ACADEMIC_YEAR-PROJECT_NAME`, where
-        * `ACADEMIC_YEAR` is the academic year in which the project is carried out (e.g. `2324`, `2425`)
-        * `PROJECT_NAME` is the aforementioned catchy name of the project
+BridgeIT adopts **Hexagonal Architecture** and **Domain-Driven Design** principles within the **Requirement Lifecycle** bounded context.
 
-    2. add all the team members to the organization, with the role of _owner_
+The implementation currently uses:
 
-    3. add the teacher as well with the role of _owner_ (username: [`gciatto`](https://github.com/gciatto))
+- Python, FastAPI, and Pydantic;
+- SQLite through Python's standard-library `sqlite3` driver;
+- Google Gemini through the `google-genai` client;
+- vanilla HTML, CSS, and JavaScript;
+- Poetry, pytest, Ruff, and Mypy;
+- GitHub for version control, collaboration, and publication.
 
-5. By means of [this repository template][template-repo], create a new repository in your organization, named `report`
-    * use the ad-hoc button to instantiate the template:
+Architectural details are documented in the [Design chapter](sections/03-design/index.md), while implementation choices and development conventions are described in the [Development chapter](sections/04-development/index.md).
 
-        !["Use this template" button on GitHub](pictures/github-use-template.png)
+## Repository organization
 
-    * follow the instruction below on how to customise your report
+The project is split into two repositories:
 
-6. Create a new repository in your organization, named `artifact`
-    * this repository will contain the _code_ of your project work, if any
-    * you may use our [Python project template](https://github.com/unibo-dtm-se/template-python-project) if you want
-    * in case your software consists of multiple components, you may consider having multiple repositories, one for each component
+- **`BridgeIT-artifact`** contains the application source code, frontend, backend, automated tests, and implementation-related configuration.
+- **`report`** contains this Jekyll-based Software Engineering report and its Markdown chapters.
 
-7. Post the link to your GitHub organization in the course's [Project forum][project-forum],
-in correspondence of your project proposal
+The report chapters are stored in [`sections/`](sections/).
 
-8. Work on your project, and on your report
+## Report contents
 
-9. When you are done with your project, and with your report, create one more post on the [Project forum][project-forum],
-to notify the teacher, and ask for an appointment for the final presentation
+The report follows the structure supplied by the course template and includes chapters covering:
 
-## How to customise your report
+- concept and Requirements;
+- architectural and domain design;
+- development practices;
+- validation and testing;
+- release, deployment, and CI/CD;
+- user and developer guidance;
+- self-evaluation and future work.
 
-1. In the `_config.yml` file, you _must_ customise the __title__ and the __description__ of your report
+Some chapters are still being completed because the project is a work in progress.
 
-2. Enable GitHub pages for your repository
+## Local preview
 
-    !["Enable GitHub pages for your repository"](pictures/github-pages.png)
+A local preview requires Ruby, Bundler, and the dependencies declared in the repository.
 
-    1. go to the _Settings_ tab of your repository
-    2. scroll down to the _GitHub Pages_ section
-    3. select the `main` branch as the source for GitHub Pages
-    4. select the `root` directory as the source for GitHub Pages
-    5. click on the _Save_ button
+From the repository root:
 
-3. In the `sections/` directory, you _must__ customise the __contents__ of your report
-    + files are already there, you just need to write your contents [in Markdown format][markdown-cheatsheet]
-    + the template files are already filled with suggestions on what to write
+```bash
+bundle install
+bundle exec jekyll serve
+```
 
-## How to make the report available on the Web
+The terminal normally exposes the preview at:
 
-> Assumption: you have already enabled GitHub Pages for your repository (see above)
+```text
+http://127.0.0.1:4000
+```
 
-1. The report is automatically generated by GitHub Actions
-    + you don't need to do anything, just __commit & push__ your changes to the repository
+Stop the local server with `Control + C`.
 
-2. Of course, you may experience some delay before the site is updated
-    + you may check the status of the generation by looking at the _Actions_ tab of your repository
+## Contribution workflow
 
-3. Of course, the process may fail if the syntax of your Markdown files is incorrect
-    + or if you are not compliant to the directory structure or the file naming conventions
+Before editing the report:
 
-4. If the process succeeds, you may access the report at the following URL:
-    + `https://ORGANIZATION_NAME.github.io/REPOSITORY_NAME`
-    + which, if you followed our instructions, should be: `https://unibo-dtm-se-ACADEMIC_YEAR-PROJECT_NAME.github.io/report`
+```bash
+git switch main
+git pull origin main
+```
 
-## How to visualise a preview of the report, locally
+After changing a report file:
 
-You need to install __Ruby__ on your machine (instructions below).
+```bash
+git status
+git diff
+git add <modified-files>
+git commit -m "docs: describe the completed change"
+git pull --rebase origin main
+git push origin main
+```
 
-1. Assuming that Ruby is correctly installed, you need to clone your report repository on your machine:
-    
-    ```bash
-    git clone https://github.com/ORGANIZATION_NAME/REPOSITORY_NAME
-    ```
+Commit messages follow the Conventional Commits style.
 
-2. Then, you need to restore Jeckyll's dependencies.
-From within the root of your repository, run the following command:
+## Publication
 
-    ```bash
-    bundler install
-    ```
+The report is published through GitHub Pages from the `main` branch. After a successful push, the published website may take a short time to update.
 
+The publication status can be checked from the repository's **Actions** or **Deployments** area.
 
-3. Finally, you may run the following command from the root of your repository:
+## Academic context
 
-    ```bash
-    bundler exec jekyll serve
-    ```
-
-    The output of that command should tell you the local URL where the preview of your site is available.
-    Most commonly, it will be <http://127.0.0.1:4000>.
-
-4. Open your browser, and navigate to the URL provided by the previous command
-    + from now on, until you stop the `bundler exec jekyll serve` command, any change you make to the `.md` files will be automatically reflected in the preview
-    + you may stop the preview by pressing `Ctrl+C` in the terminal
-
-## How to install Ruby and Jekyll
-
-Follow instructions from here: <https://jekyllrb.com/docs/installation/>
-
-<!-- References -->
-
-[template-repo]: https://github.com/unibo-dtm-se/template-project-work
-[template-site]: https://unibo-dtm-se.github.io/template-project-work
-[course-site]: https://www.unibo.it/en/study/phd-professional-masters-specialisation-schools-and-other-programmes/course-unit-catalogue/course-unit/2024/466765
-[general-forum]: https://virtuale.unibo.it/mod/forum/view.php?id=1885625
-[project-forum]: https://virtuale.unibo.it/mod/forum/view.php?id=1885626
-[markdown-cheatsheet]: https://www.markdownguide.org/cheat-sheet
-[jeckyll-home]: https://jekyllrb.com/
+BridgeIT is an academic project developed for the University of Bologna Software Engineering course. This repository documents the implemented system, its architectural rationale, the development process, and the validation evidence collected by the team.
