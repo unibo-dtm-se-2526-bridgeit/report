@@ -8,13 +8,13 @@ nav_order: 3
 
 ## User stories
 
-As a Business Stakeholder, I want to submit a requirement in natural language, so that my intent is captured as a structured artifact I can later review.
-As a Requirements Engineer, I want the platform to analyze a requirement for ambiguity or incompleteness, so that I can identify issues before the requirement is validated.
-As a Business Stakeholder or Requirements Engineer, I want to revise a requirement's wording after an analysis has surfaced an issue, so that the requirement can be improved before validation.
-As a Requirements Engineer, I want to see a quality indication for a requirement, so that I can decide whether it needs further clarification.
-As a Business Stakeholder or Requirements Engineer, I want to explicitly approve, edit, or reject any AI-generated suggestion, so that no interpretation of my requirement becomes authoritative without my consent.
-As a Software Engineer, I want to inspect which artifacts are linked to a given requirement, so that I understand the origin of what I am implementing.
-As a Software Engineer, I want to create a derived artifact from a validated requirement, so that I can begin implementation work with a clear, traceable link back to its source.
+- As a Business Stakeholder, I want to submit a requirement in natural language, so that my intent is captured as a structured artifact I can later review.
+- As a Requirements Engineer, I want the platform to analyze a requirement for ambiguity or incompleteness, so that I can identify issues before the requirement is validated.
+- As a Business Stakeholder or Requirements Engineer, I want to revise a requirement's wording after an analysis has surfaced an issue, so that the requirement can be improved before validation.
+- As a Requirements Engineer, I want to see a quality indication for a requirement, so that I can decide whether it needs further clarification.
+- As a Business Stakeholder or Requirements Engineer, I want to explicitly approve, edit, or reject any AI-generated suggestion, so that no interpretation of my requirement becomes authoritative without my consent.
+- As a Software Engineer, I want to inspect which artifacts are linked to a given requirement, so that I understand the origin of what I am implementing.
+- As a Software Engineer, I want to create a derived artifact from a validated requirement, so that I can begin implementation work with a clear, traceable link back to its source.
 
 ![BridgeIT Use Case Diagram](../../pictures/bridgeit-use-case-diagram.png)
 
