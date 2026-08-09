@@ -40,14 +40,14 @@ Each job depends on the previous one succeeding.
 
 **Two real defects were diagnosed and fixed in this deploy job during development**, not merely anticipated in the abstract:
 
-1. `deploy.yml` originally referenced `secrets.RELEASE_TOKEN`, a custom secret name never actually configured in the repository — so the job failed with `No GitHub token specified` on every merge to `master`, silently, for several weeks, until the log was read closely and the reference corrected to `secrets.GITHUB_TOKEN` (GitHub's own automatically-provided token, already carrying the declared `contents: write` permission).
+1. `deploy.yml` originally referenced `secrets.RELEASE_TOKEN`, a custom secret name never actually configured in the repository, so the job failed with `No GitHub token specified` on every merge to `master`, silently, for several weeks, until the log was read closely and the reference corrected to `secrets.GITHUB_TOKEN` (GitHub's own automatically-provided token, already carrying the declared `contents: write` permission).
 2. Once that was fixed, `semantic-release` began running for real and immediately failed again: it unconditionally tried to configure and publish to PyPI even with no `PYPI_TOKEN` secret set. `release.config.mjs` was changed to only attempt PyPI configuration/publishing if that token is actually present; otherwise it still builds the package, but skips the `poetry publish` step entirely.
 
 Both fixes were confirmed by observing the next real merge complete with a fully green pipeline, not just by reasoning about the fix in isolation.
 
 ### Authentication: `GITHUB_TOKEN`, no long-lived secrets
 
-Unlike a workflow that publishes to a public package index, BridgeIT's release step needs only to write back to its own repository (the changelog commit, the tag, and the GitHub Release itself). This is done entirely with **`secrets.GITHUB_TOKEN`**, the short-lived token GitHub automatically issues for every workflow run, scoped by the `permissions:` block declared at the job level (`contents: write`, `packages: write`). No manually created, long-lived token is stored in the repository's secrets for this purpose — only `PYPI_TOKEN` exists as an optional secret, and the release step is explicitly written to work correctly whether or not it is set (see above).
+Unlike a workflow that publishes to a public package index, BridgeIT's release step needs only to write back to its own repository (the changelog commit, the tag, and the GitHub Release itself). This is done entirely with **`secrets.GITHUB_TOKEN`**, the short-lived token GitHub automatically issues for every workflow run, scoped by the `permissions:` block declared at the job level (`contents: write`, `packages: write`). No manually created, long-lived token is stored in the repository's secrets for this purpose, only `PYPI_TOKEN` exists as an optional secret, and the release step is explicitly written to work correctly whether or not it is set (see above).
 
 ### Other permissions and environment variables
 
