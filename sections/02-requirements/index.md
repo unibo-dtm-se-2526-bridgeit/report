@@ -37,38 +37,7 @@ The stories below translate the project's functional requirements into concrete 
 **US-07 — Creating a derived artifact** *(→ FR-07)*
 > As a Software Engineer, I want to create a derived artifact from a validated requirement, so that I can begin implementation work with a clear, traceable link back to its source.
 
-```plantuml
-@startuml
-left to right direction
-actor "Business Stakeholder" as BS
-actor "Requirements Engineer" as RE
-actor "Software Engineer" as SE
-
-rectangle BridgeIT {
-  usecase "Submit requirement (FR-01)" as UC1
-  usecase "Request AI analysis (FR-02)" as UC2
-  usecase "Clarify requirement (FR-03)" as UC3
-  usecase "Review quality indication (FR-04)" as UC4
-  usecase "Validate AI suggestion (FR-05)" as UC5
-  usecase "Inspect traceability (FR-06)" as UC6
-  usecase "Create derived artifact (FR-07)" as UC7
-}
-
-BS --> UC1
-BS --> UC3
-BS --> UC5
-RE --> UC2
-RE --> UC3
-RE --> UC4
-RE --> UC5
-SE --> UC6
-SE --> UC7
-
-UC2 ..> UC1 : <<extend>>
-UC5 ..> UC2 : <<extend>>
-UC7 ..> UC5 : <<extend>>
-@enduml
-```
+![BridgeIT Use Case Diagram](../../pictures/bridgeit-use-case-diagram.svg)
 
 ## Requirements analysis
 
