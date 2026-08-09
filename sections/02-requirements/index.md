@@ -37,7 +37,7 @@ The stories below translate the project's functional requirements into concrete 
 **US-07 — Creating a derived artifact** *(→ FR-07)*
 > As a Software Engineer, I want to create a derived artifact from a validated requirement, so that I can begin implementation work with a clear, traceable link back to its source.
 
-![BridgeIT Use Case Diagram](../../pictures/bridgeit-use-case-diagram.svg)
+![BridgeIT Use Case Diagram](../../pictures/bridgeit-use-case-diagram.png)
 
 ## Requirements analysis
 
