@@ -27,8 +27,8 @@ nav_order: 3
 - F3: the user must be able to revise a requirement's wording after an analysis has surfaced an issue, keeping the same identifier across the revision
 - F4: the system must produce a quality indication for a requirement, distinguishing at least "ready for validation" from "needs clarification"
 - F5: the user must explicitly approve, edit, or reject any AI-generated suggestion before it can affect the requirement's authoritative state
-- F6: the user must be able to create and inspect traceability links between a requirement and the artifacts derived from it *(optional stretch goal — not currently implemented)*
-- F7: the user must be able to create a derived, structured artifact from a validated requirement, preserving its link to the source requirement *(optional stretch goal — not currently implemented)*
+- F6: the user must be able to create and inspect traceability links between a requirement and the artifacts derived from it 
+- F7: the user must be able to create a derived, structured artifact from a validated requirement, preserving its link to the source requirement 
 
 ### Non-functional
 
@@ -48,7 +48,7 @@ nav_order: 3
 - I1: the system must use SQLite as its DBMS, mandated by the course once the team grew to two members
 - I2: the system must provide a web or desktop frontend, mandated by the course for the same reason
 
-All other technical choices (`sqlite3` over an ORM, vanilla HTML/CSS/JavaScript over a frontend framework, FastAPI, Gemini as the AI provider, etc.) are design decisions made to satisfy the requirements above, not externally imposed constraints — they are discussed and justified in the Design section instead.
+All other technical choices (`sqlite3` over an ORM, vanilla HTML/CSS/JavaScript over a frontend framework, FastAPI, Gemini as the AI provider, etc.) are design decisions made to satisfy the requirements above, not externally imposed constraints, they are discussed and justified in the Design section instead.
 
 ## Glossary
 
