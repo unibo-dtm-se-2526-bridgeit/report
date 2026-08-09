@@ -8,6 +8,8 @@ nav_order: 2
 
 BridgeIT is a web-based backend service with a companion browser frontend. It is a Requirements Engineering platform featuring AI-assisted analysis and explicit human validation of natural-language requirements.
 
+![BridgeIT — AI-assisted analysis screen](../../pictures/bridgeit-analyse-screenshot.png)
+
 The backend is distributed as source code, cloned from its repository and run locally through Poetry:
 
 ```bash
