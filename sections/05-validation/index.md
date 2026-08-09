@@ -12,11 +12,11 @@ Tests were developed incrementally, alongside each piece of functionality, rathe
 
 The test suite follows a **mirrored structure**: each production module has a matching test module under `tests/`, replicating the package tree (`tests/domain/`, `tests/application/`, `tests/infrastructure/`, `tests/adapters/api/`). This keeps gaps visible, a production module without a corresponding test module has not been tested, and keeps each failing test pointing at exactly one file to investigate.
 
-The **domain layer** (pure Python, no framework dependency) is the most densely tested part of the suite, since its business rules can be asserted directly and cheaply. **Adapters** (the SQLite repository, the Gemini AI Gateway) are tested against their **port interfaces**, so the tests describe expected behavior rather than internal implementation — a change in how an adapter is implemented internally does not break its tests without reason.
+The **domain layer** (pure Python, no framework dependency) is the most densely tested part of the suite, since its business rules can be asserted directly and cheaply. **Adapters** (the SQLite repository, the Gemini AI Gateway) are tested against their **port interfaces**, so the tests describe expected behavior rather than internal implementation, a change in how an adapter is implemented internally does not break its tests without reason.
 
 ## Framework
 
-The framework used is **pytest**. It is preferred over the standard library's `unittest` for two reasons: plain `assert` statements give rich failure introspection with no boilerplate assertion methods to remember; and its fixture system allows composable setup and easy injection of test doubles — used extensively for isolated, disposable SQLite databases (via the built-in `tmp_path` fixture) and for mocked external clients.
+The framework used is **pytest**. It is preferred over the standard library's `unittest` for two reasons: plain `assert` statements give rich failure introspection with no boilerplate assertion methods to remember; and its fixture system allows composable setup and easy injection of test doubles, used extensively for isolated, disposable SQLite databases (via the built-in `tmp_path` fixture) and for mocked external clients.
 
 ## Quality Gate
 
