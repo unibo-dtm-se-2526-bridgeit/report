@@ -8,9 +8,9 @@ nav_order: 6
 
 ## Testing Approach
 
-Tests were developed incrementally, alongside each piece of functionality, rather than all at once at the end of the project. In most cases, a new endpoint or use case was first verified manually (through Swagger UI or the frontend) to confirm its intended behavior, and then covered by an automated test reproducing that same check — a "verify, then automate" pattern rather than strict Test-Driven Development's red-green-refactor cycle.
+Tests were developed incrementally, alongside each piece of functionality, rather than all at once at the end of the project. In most cases, a new endpoint or use case was first verified manually (through Swagger UI or the frontend) to confirm its intended behavior, and then covered by an automated test reproducing that same check, a "verify, then automate" pattern rather than strict Test-Driven Development's red-green-refactor cycle.
 
-The test suite follows a **mirrored structure**: each production module has a matching test module under `tests/`, replicating the package tree (`tests/domain/`, `tests/application/`, `tests/infrastructure/`, `tests/adapters/api/`). This keeps gaps visible — a production module without a corresponding test module has not been tested — and keeps each failing test pointing at exactly one file to investigate.
+The test suite follows a **mirrored structure**: each production module has a matching test module under `tests/`, replicating the package tree (`tests/domain/`, `tests/application/`, `tests/infrastructure/`, `tests/adapters/api/`). This keeps gaps visible, a production module without a corresponding test module has not been tested, and keeps each failing test pointing at exactly one file to investigate.
 
 The **domain layer** (pure Python, no framework dependency) is the most densely tested part of the suite, since its business rules can be asserted directly and cheaply. **Adapters** (the SQLite repository, the Gemini AI Gateway) are tested against their **port interfaces**, so the tests describe expected behavior rather than internal implementation — a change in how an adapter is implemented internally does not break its tests without reason.
 
@@ -89,10 +89,10 @@ BridgeIT does not have a fully automated, end-to-end test suite exercising the c
 
 What **is** verified automatically at system level, through the CI/CD workflow (`.github/workflows/check.yml`):
 
-- the whole test suite runs across **3 operating systems** (Ubuntu, Windows, macOS) and **4 Python versions** (3.10, 3.11, 3.12, 3.13) — 12 runs in total — providing automated evidence that the codebase is not accidentally tied to one specific environment;
-- the package is built with Poetry (`poetry build`) as part of every release, verifying the build itself succeeds, though — unlike some other course projects — it is not subsequently published to or reinstalled from PyPI, since BridgeIT is not intended for public package distribution (see [Release](../06-release/)).
+- the whole test suite runs across **3 operating systems** (Ubuntu, Windows, macOS) and **4 Python versions** (3.10, 3.11, 3.12, 3.13) — 12 runs in total, providing automated evidence that the codebase is not accidentally tied to one specific environment;
+- the package is built with Poetry (`poetry build`) as part of every release, verifying the build itself succeeds, though, unlike some other course projects, it is not subsequently published to or reinstalled from PyPI, since BridgeIT is not intended for public package distribution (see [Release](../06-release/)).
 
-The **Docker Compose** setup was used, separately, to manually verify the backend runs correctly in a clean environment with no locally pre-configured Poetry/Python setup — the same purpose a clean-runner PyPI round-trip would serve for a publicly distributed package.
+The **Docker Compose** setup was used, separately, to manually verify the backend runs correctly in a clean environment with no locally pre-configured Poetry/Python setup, the same purpose a clean-runner PyPI round-trip would serve for a publicly distributed package.
 
 ## Manual Acceptance Tests
 
