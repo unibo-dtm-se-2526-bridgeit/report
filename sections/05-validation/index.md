@@ -126,6 +126,17 @@ The session focused on the core human-in-the-loop workflow and exercised all thr
 | TC-E2E-02 | Clear requirement ready for approval | `Analyzed` | `Approve` | `Validated` | **PASS** |
 | TC-E2E-03 | Problematic requirement rejected by the analyst | `Analyzed` | `Reject` | `Rejected` | **PASS** |
 
+### Additional acceptance checks
+
+After the three primary validation outcomes had been verified, the session was extended with additional checks covering requirement refinement, lifecycle enforcement, and the in-application Guide.
+
+| Test | Scenario | Verified behavior | Result |
+|---|---|---|---|
+| TC-E2E-04 | Re-analyse a clarified requirement and then approve it | `Clarified` → `Analyzed` → `Validated` | **PASS** |
+| TC-E2E-05 | Request another analysis after the requirement has reached `Validated` | The backend rejects the invalid transition with HTTP `409` | **PASS** |
+| TC-E2E-06 | Repeat the edit and re-analysis refinement cycle twice | `Submitted` → `Analyzed` → `Clarified` → `Analyzed` → `Clarified` → `Analyzed` | **PASS** |
+| TC-UI-01 | Open and inspect the in-application **Guide** page | The Guide loads successfully and exposes the expected workflow help and navigation | **PASS** |
+
 ### TC-E2E-01 — AI-assisted clarification
 
 **Initial requirement**
@@ -200,9 +211,83 @@ A subsequent lookup returned the original requirement text and the `Rejected` st
 
 **Result: PASS**
 
+### TC-E2E-04 — Re-analysis after clarification
+
+TC-E2E-01 left the requirement in the `Clarified` state after the Business Analyst edited its text.
+
+The clarified requirement was submitted for AI-assisted analysis again.
+
+The re-analysis completed successfully and moved the requirement from:
+
+`Clarified` → `Analyzed`
+
+The requirement therefore returned to a state requiring an explicit Business Analyst decision rather than being autonomously finalized by the AI.
+
+The Business Analyst then selected `Approve`, producing:
+
+`Analyzed` → `Validated`
+
+This verified the complete refinement path:
+
+`Submitted` → `Analyzed` → `Clarified` → `Analyzed` → `Validated`
+
+**Requirement id:** `3a1de6c5-2f2a-4ea0-8409-13e4da08cfe4`
+
+**Result: PASS**
+
+### TC-E2E-05 — Invalid transition after validation
+
+After the requirement used in TC-E2E-04 had reached the final `Validated` state, another analysis request was attempted through:
+
+`POST /requirements/{id}/analyse`
+
+The backend rejected the request with HTTP status `409`.
+
+The returned error reported that the transition from `Validated` to `Analyzed` was not permitted.
+
+This confirms that the application enforces this lifecycle constraint and prevents a validated requirement from being moved back into the AI-analysis state through this operation.
+
+**Requirement id:** `3a1de6c5-2f2a-4ea0-8409-13e4da08cfe4`
+
+**Result: PASS**
+
+### TC-E2E-06 — Repeated refinement cycle
+
+A separate requirement was used to verify repeated clarification and re-analysis.
+
+**Initial requirement**
+
+> The system should notify users quickly about important events.
+
+The requirement was created and analysed. The Business Analyst then edited it, producing the `Clarified` state.
+
+The clarified requirement was analysed again, returning it to `Analyzed`.
+
+A second human edit moved the requirement back to `Clarified`, followed by a second re-analysis.
+
+The observed lifecycle was:
+
+`Submitted` → `Analyzed` → `Clarified` → `Analyzed` → `Clarified` → `Analyzed`
+
+The second re-analysis completed successfully, demonstrating that the `Edit` → `Clarified` → `Analyse` refinement cycle can be repeated before a final validation decision is recorded.
+
+**Requirement id:** `df1dad9c-1496-497d-8b90-efbaf2f1914d`
+
+**Result: PASS**
+
+### TC-UI-01 — In-application Guide smoke test
+
+The **Guide** page was opened through the BridgeIT frontend as a final user-interface smoke test.
+
+The page loaded successfully and exposed the expected workflow guidance and application navigation.
+
+This confirmed that the user-facing help page is reachable as part of the running application.
+
+**Result: PASS**
+
 ### Acceptance result
 
-All three executed end-to-end scenarios completed successfully.
+All executed manual acceptance checks completed successfully.
 
 The acceptance session verified the complete core workflow:
 
@@ -214,4 +299,11 @@ and all three FR-05 outcomes:
 - `Approve` → `Validated`;
 - `Reject` → `Rejected`.
 
-The tests also provide direct evidence of BridgeIT's central human-in-the-loop invariant: **Gemini assists the requirements engineering process, but it does not autonomously determine the authoritative final state of a requirement. That decision remains under Business Analyst control.**
+The extended checks additionally verified that:
+
+- a `Clarified` requirement can be analysed again and return to `Analyzed`;
+- the refinement cycle can be repeated before a final human decision;
+- attempting to analyse a `Validated` requirement is rejected with HTTP `409`;
+- the in-application **Guide** is available through the running frontend.
+
+The tests provide direct evidence of BridgeIT's central human-in-the-loop invariant: **Gemini assists the requirements engineering process, but it does not autonomously determine the authoritative final state of a requirement. That decision remains under Business Analyst control.**
