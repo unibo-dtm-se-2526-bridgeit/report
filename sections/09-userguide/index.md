@@ -45,6 +45,10 @@ The human decision can then produce one of three outcomes:
 
 The AI analysis itself never produces one of these authoritative final states.
 
+If the Business Analyst chooses `Edit`, the requirement moves to `Clarified`. A requirement in `Clarified` state can be submitted for AI analysis again. After re-analysis, it returns to `Analyzed` and still requires a new Business Analyst decision.
+
+The `Edit` → `Clarified` → `Analyse` refinement cycle can therefore be repeated before a final validation decision is recorded.
+
 ## 1. Check the backend connection
 
 Open the **Health** page before starting a requirements engineering session.
