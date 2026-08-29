@@ -96,16 +96,122 @@ The **Docker Compose** setup was used, separately, to manually verify the backen
 
 ## Manual Acceptance Tests
 
-The acceptance tests below were executed by hand against the running application, following the plan below so that another team member can repeat them exactly. Each test corresponds to the acceptance criteria of the [Requirements](../02-requirements/) section.
+Manual acceptance testing complements the automated test suite by exercising the application as a user-facing system. The test plan below maps the main functional requirements to reproducible end-to-end checks.
+
+### Acceptance test plan
 
 | Requirement | Steps | Expected result |
 |---|---|---|
-| FR-01 | Submit a requirement via `POST /requirements` (or the "Create" frontend page) with non-empty text | A `201` response (or successful redirect) is returned with a unique id and status `Submitted`; retrieving it via `GET /requirements/{id}` returns the same text unchanged |
-| FR-01 (error path) | Retrieve a requirement using an id that does not exist | A `404` response is returned, in the shared structured error format (`{"error": {"code": "requirement_not_found", ...}}`) |
-| FR-02 | Request an analysis for a submitted requirement via `POST /requirements/{id}/analyse` (or the "Analyse" frontend page) | A real Gemini-generated `quality_indication` and a list of `issues` are returned; the requirement's status becomes `Analyzed`; its stored text is unchanged |
-| FR-04 | Inspect the analysis result above | The `quality_indication` is either `ready_for_validation` or `needs_clarification`, distinct from the requirement's own status field |
-| FR-05 | Submit a validation decision via `POST /requirements/{id}/validate` (or the "Validate" frontend page) with `decision: "approve"` | The requirement's status becomes `Validated`; repeating the same flow with `"reject"` on a different requirement results in status `Rejected` |
-| FR-05 (invariant) | Attempt to retrieve a requirement's status before any validation decision has been recorded, after an analysis | The status remains `Analyzed`, not `Validated` — confirming no AI output changes the authoritative state without an explicit human decision |
-| — (Docker) | Run `docker compose up --build` on a machine with no local Poetry/Python setup, then repeat the FR-01 → FR-02 → FR-05 flow above via Swagger UI at the container's exposed port | The full flow behaves identically to a local Poetry-based run |
+| FR-01 | Submit a requirement via `POST /requirements` or the **Create** frontend page with non-empty text | A requirement is created with a unique id and status `Submitted`; retrieving it returns the same stored text |
+| FR-01 (error path) | Retrieve a requirement using an id that does not exist | A `404` response is returned using the shared structured error format |
+| FR-02 | Request an analysis for a submitted requirement via `POST /requirements/{id}/analyse` or the **Analyse** frontend page | Gemini returns a quality indication and issues; the requirement status becomes `Analyzed`; the authoritative requirement text is not autonomously modified by the AI |
+| FR-04 | Inspect the AI analysis result | The analysis distinguishes between a requirement that is ready for validation and one that needs clarification |
+| FR-05 — Approve | Submit a human validation decision with `decision: "approve"` | The requirement status becomes `Validated` |
+| FR-05 — Edit | Submit a human validation decision with `decision: "edit"` and a revised requirement text | The revised text is persisted and the requirement status becomes `Clarified` |
+| FR-05 — Reject | Submit a human validation decision with `decision: "reject"` | The requirement status becomes `Rejected` |
+| FR-05 — Human-in-the-loop invariant | Inspect a requirement after AI analysis but before any human validation decision | The requirement remains `Analyzed`, confirming that AI output alone cannot produce `Validated`, `Clarified`, or `Rejected` |
+| Deployment check | Run BridgeIT in its documented local or containerized environment and repeat the core submission → analysis → validation flow | The application starts correctly and the end-to-end workflow remains available through the exposed interfaces |
 
-All rows above were executed successfully, both via Swagger UI and via the real frontend, with no discrepancy in behavior between the two clients.
+### Executed end-to-end acceptance session
+
+A manual end-to-end acceptance session was performed on **29 August 2026** against the locally running BridgeIT application.
+
+The FastAPI backend was running at `http://127.0.0.1:8000`, with the Gemini AI gateway enabled, and the frontend was served at `http://127.0.0.1:5500`.
+
+The session focused on the core human-in-the-loop workflow and exercised all three FR-05 validation decisions through the real frontend.
+
+| Test | Scenario | State after AI analysis | Human decision | Final persisted state | Result |
+|---|---|---|---|---|---|
+| TC-E2E-01 | Ambiguous requirement requiring clarification | `Analyzed` | `Edit` | `Clarified` | **PASS** |
+| TC-E2E-02 | Clear requirement ready for approval | `Analyzed` | `Approve` | `Validated` | **PASS** |
+| TC-E2E-03 | Problematic requirement rejected by the analyst | `Analyzed` | `Reject` | `Rejected` | **PASS** |
+
+### TC-E2E-01 — AI-assisted clarification
+
+**Initial requirement**
+
+> The system should notify users quickly when an important event occurs.
+
+The requirement was created successfully and submitted for Gemini-assisted analysis.
+
+The analysis identified three concrete quality problems:
+
+1. the intended recipients represented by **"users"** were not specified;
+2. **"quickly"** did not define a measurable response-time constraint;
+3. **"important event"** did not specify which events should trigger a notification.
+
+After AI analysis, the requirement status was `Analyzed`. The AI did not make an authoritative validation decision.
+
+The Business Analyst selected `Edit` and replaced the text with:
+
+> The system shall notify registered administrators within 5 seconds when a critical system failure is detected.
+
+The resulting status was `Clarified`.
+
+A subsequent lookup returned the edited text together with the `Clarified` state, confirming persistence of both the human decision and the revised requirement.
+
+**Requirement id:** `3a1de6c5-2f2a-4ea0-8409-13e4da08cfe4`
+
+**Result: PASS**
+
+### TC-E2E-02 — Human approval of a clear requirement
+
+**Initial requirement**
+
+> The system shall send an email notification to registered administrators within 5 seconds after detecting a critical system failure.
+
+The requirement was created and analysed successfully.
+
+Gemini reported no blocking quality issues and indicated that the requirement was ready for Business Analyst review. Despite the positive AI assessment, the requirement remained `Analyzed` until an explicit human decision was recorded.
+
+The Business Analyst selected `Approve`.
+
+The resulting status was `Validated`.
+
+A subsequent lookup returned the same requirement text and the `Validated` state, confirming persistence of the approval decision.
+
+**Requirement id:** `8d8750e6-3071-4b31-8f61-bcce6e9b1615`
+
+**Result: PASS**
+
+### TC-E2E-03 — Human rejection of a problematic requirement
+
+**Initial requirement**
+
+> The system shall automatically delete all customer data every day.
+
+The requirement was created and analysed successfully.
+
+The AI identified several issues, including:
+
+- insufficient definition of the customers and data affected;
+- ambiguity in the execution schedule;
+- missing safeguards concerning notification, archival, and permanent data loss.
+
+After AI analysis, the requirement status was `Analyzed`.
+
+The Business Analyst explicitly selected `Reject`.
+
+The resulting status was `Rejected`.
+
+A subsequent lookup returned the original requirement text and the `Rejected` state, confirming persistence of the rejection decision.
+
+**Requirement id:** `d13eb837-183e-48e6-828f-7d9de024e6d4`
+
+**Result: PASS**
+
+### Acceptance result
+
+All three executed end-to-end scenarios completed successfully.
+
+The acceptance session verified the complete core workflow:
+
+`Submitted` → `Analyzed` → explicit human decision
+
+and all three FR-05 outcomes:
+
+- `Edit` → `Clarified`;
+- `Approve` → `Validated`;
+- `Reject` → `Rejected`.
+
+The tests also provide direct evidence of BridgeIT's central human-in-the-loop invariant: **Gemini assists the requirements engineering process, but it does not autonomously determine the authoritative final state of a requirement. That decision remains under Business Analyst control.**
