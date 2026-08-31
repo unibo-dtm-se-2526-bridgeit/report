@@ -1,125 +1,153 @@
 # BridgeIT — Software Engineering Project Report
 
-> **Status:** Work in progress
+![Status](https://img.shields.io/badge/status-finalization-brightgreen)
+![Report](https://img.shields.io/badge/report-GitHub%20Pages-blue)
+![Format](https://img.shields.io/badge/format-Markdown-lightgrey)
 
-BridgeIT is an AI-assisted Requirements Engineering platform developed for the **Software Engineering** course of the **Digital Transformation Management** degree programme at the University of Bologna.
+> AI-Supported Requirements Engineering Platform — University of Bologna Software Engineering Project (A.Y. 2025/2026)
 
-The project supports the Requirement lifecycle from submission to AI-assisted quality analysis and explicit Business Analyst validation. AI suggestions assist the process, but the final decision remains human-controlled.
+BridgeIT is a Requirements Engineering platform supporting the lifecycle of natural-language software requirements from submission to AI-assisted quality analysis and explicit Business Analyst validation.
 
-## Project links
+The project follows a **human-in-the-loop** principle: AI assists the Requirements Engineering process, while authoritative validation decisions remain under human control.
+
+## Project Links
 
 - [Published report](https://unibo-dtm-se-2526-bridgeit.github.io/report/)
 - [Software artifact](https://github.com/unibo-dtm-se-2526-bridgeit/BridgeIT-artifact)
 - [Report repository](https://github.com/unibo-dtm-se-2526-bridgeit/report)
 - [GitHub organization](https://github.com/unibo-dtm-se-2526-bridgeit)
 
-## Team
+## Current Project Status
 
-- **Nicole Tresca** — `@nikytresca`
-- **Martina Fava** — `@marthinaf03`
+The central BridgeIT workflow has been implemented and validated end-to-end in the software artifact:
 
-## Project overview
+`Submitted` → `Analyzed` → explicit Business Analyst decision
 
-BridgeIT provides a structured workflow for:
+with the supported human outcomes:
 
-1. submitting a Requirement;
-2. storing and retrieving Requirements;
-3. requesting an AI-assisted quality analysis;
-4. reviewing issues detected by the AI provider;
-5. validating, clarifying, editing, or rejecting a Requirement through an explicit Business Analyst decision.
+- `Approve` → `Validated`
+- `Edit` → `Clarified`
+- `Reject` → `Rejected`
 
-The AI assessment is intentionally qualitative and binary:
+A requirement in `Clarified` state can be analysed again and return to `Analyzed`. The `Edit` → `Clarified` → `Analyse` refinement cycle can therefore be repeated before a final validation decision is recorded.
 
-- `ready_for_validation`;
-- `needs_clarification`.
+The project currently includes:
 
-The system does not expose a fabricated numerical confidence score.
+- Hexagonal Architecture and Domain-Driven Design;
+- FastAPI and Pydantic backend;
+- SQLite persistence through Python's standard `sqlite3`;
+- Google Gemini integration behind an `AIGateway`;
+- vanilla HTML/CSS/JavaScript frontend;
+- automated testing and static verification with pytest, Ruff, and Mypy;
+- Docker and Docker Compose support;
+- GitHub Actions CI/CD and automated releases;
+- a complete User Guide;
+- recorded manual end-to-end acceptance evidence.
 
-## Architecture and technologies
+The core implementation, User Guide, and Validation documentation are complete. Final editorial alignment, self-evaluation, and AI-tool-use disclosure are being finalized before submission.
 
-BridgeIT adopts **Hexagonal Architecture** and **Domain-Driven Design** principles within the **Requirement Lifecycle** bounded context.
+## Repository Organization
 
-The implementation currently uses:
+BridgeIT is split into two repositories:
 
-- Python, FastAPI, and Pydantic;
-- SQLite through Python's standard-library `sqlite3` driver;
-- Google Gemini through the `google-genai` client;
+- **`BridgeIT-artifact`** — application source code, frontend, backend, automated tests, Docker configuration, and CI/CD-related files;
+- **`report`** — this Jekyll-based Software Engineering report and its Markdown chapters.
+
+## Report Structure
+
+The report follows the structure provided by the Software Engineering course and includes:
+
+1. **Concept** — project motivation, context, and vision;
+2. **Requirements** — functional and non-functional requirements;
+3. **Design** — architecture, domain model, ports, adapters, and design rationale;
+4. **Development** — implementation and technological choices;
+5. **Validation** — automated and manual testing evidence;
+6. **Release** — licensing, versioning, and release process;
+7. **Deployment** — local and containerized execution;
+8. **CI/CD** — GitHub Actions and automation;
+9. **User Guide** — end-user workflow across the BridgeIT frontend;
+10. **Developer Guide** — development environment and project commands;
+11. **Self-evaluation** — final project assessment;
+12. **Future Work** — limitations and possible extensions.
+
+## Validation
+
+The manual acceptance session exercises the implemented human-in-the-loop workflow and records:
+
+- Requirement creation;
+- AI-assisted analysis;
+- human clarification and editing;
+- explicit human approval;
+- explicit human rejection;
+- re-analysis after clarification;
+- repeated refinement cycles;
+- invalid-transition enforcement after validation;
+- frontend Guide availability.
+
+Detailed test steps, Requirement identifiers, lifecycle transitions, and results are documented in the **Validation** chapter.
+
+## Architecture and Technologies
+
+BridgeIT adopts **Hexagonal Architecture (Ports and Adapters)** and **Domain-Driven Design**.
+
+The implemented technology stack includes:
+
+- Python;
+- FastAPI;
+- Pydantic;
+- SQLite through Python's standard `sqlite3`;
+- Google Gemini through `google-genai`;
 - vanilla HTML, CSS, and JavaScript;
-- Poetry, pytest, Ruff, and Mypy;
-- GitHub for version control, collaboration, and publication.
+- Poetry;
+- pytest;
+- Ruff;
+- Mypy;
+- Docker and Docker Compose;
+- GitHub Actions.
 
-Architectural details are documented in the [Design chapter](sections/03-design/index.md), while implementation choices and development conventions are described in the [Development chapter](sections/04-development/index.md).
+The separation between core logic and technical adapters keeps persistence and AI-provider choices outside the domain model.
 
-## Repository organization
+## Current Scope
 
-The project is split into two repositories:
+The final implementation deliberately prioritizes the complete:
 
-- **`BridgeIT-artifact`** contains the application source code, frontend, backend, automated tests, and implementation-related configuration.
-- **`report`** contains this Jekyll-based Software Engineering report and its Markdown chapters.
+**Requirement → AI Analysis → Human Validation**
 
-The report chapters are stored in [`sections/`](sections/).
+workflow together with the engineering infrastructure required to implement, test, deploy, and document it reliably.
 
-## Report contents
+The following capabilities remain outside the implemented core scope:
 
-The report follows the structure supplied by the course template and includes chapters covering:
+- authentication and user management;
+- authorization policies;
+- persistence and caching of AI-analysis results;
+- richer traceability-link management;
+- derived artifact generation.
 
-- concept and Requirements;
-- architectural and domain design;
-- development practices;
-- validation and testing;
-- release, deployment, and CI/CD;
-- user and developer guidance;
-- self-evaluation and future work.
+These remain possible future extensions of the current design.
 
-Some chapters are still being completed because the project is a work in progress.
+## Local Preview
 
-## Local preview
-
-A local preview requires Ruby, Bundler, and the dependencies declared in the repository.
-
-From the repository root:
+The report is built with Jekyll. From the repository root:
 
 ```bash
 bundle install
 bundle exec jekyll serve
 ```
 
-The terminal normally exposes the preview at:
+The local preview is normally available at:
 
 ```text
 http://127.0.0.1:4000
 ```
 
-Stop the local server with `Control + C`.
-
-## Contribution workflow
-
-Before editing the report:
-
-```bash
-git switch main
-git pull origin main
-```
-
-After changing a report file:
-
-```bash
-git status
-git diff
-git add <modified-files>
-git commit -m "docs: describe the completed change"
-git pull --rebase origin main
-git push origin main
-```
-
-Commit messages follow the Conventional Commits style.
-
 ## Publication
 
-The report is published through GitHub Pages from the `main` branch. After a successful push, the published website may take a short time to update.
+The report is published through GitHub Pages from the `main` branch:
 
-The publication status can be checked from the repository's **Actions** or **Deployments** area.
+https://unibo-dtm-se-2526-bridgeit.github.io/report/
 
-## Academic context
+## Academic Context
 
-BridgeIT is an academic project developed for the University of Bologna Software Engineering course. This repository documents the implemented system, its architectural rationale, the development process, and the validation evidence collected by the team.
+BridgeIT was developed for the **Software Engineering** course of the **Digital Transformation Management** degree programme at the University of Bologna.
+
+The report documents both the implemented system and the engineering process used to design, develop, validate, release, and deploy it.
