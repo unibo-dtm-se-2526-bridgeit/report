@@ -44,7 +44,7 @@ The project currently includes:
 - a complete User Guide;
 - recorded manual end-to-end acceptance evidence.
 
-The core implementation, User Guide, and Validation documentation are complete. Final editorial alignment, self-evaluation, and AI-tool-use disclosure are being finalized before submission.
+The implemented and validated core workflow, together with the User Guide and Validation evidence, currently covers the team's prioritised end-to-end scope. Final editorial alignment, self-evaluation, and AI-tool-use disclosure are still being completed. The team is also awaiting instructor feedback on whether any additional capabilities should be included before final submission.
 
 ## Repository Organization
 
@@ -57,18 +57,18 @@ BridgeIT is split into two repositories:
 
 The report follows the structure provided by the Software Engineering course and includes:
 
-1. **Concept** — project motivation, context, and vision;
-2. **Requirements** — functional and non-functional requirements;
-3. **Design** — architecture, domain model, ports, adapters, and design rationale;
-4. **Development** — implementation and technological choices;
-5. **Validation** — automated and manual testing evidence;
-6. **Release** — licensing, versioning, and release process;
-7. **Deployment** — local and containerized execution;
-8. **CI/CD** — GitHub Actions and automation;
-9. **User Guide** — end-user workflow across the BridgeIT frontend;
-10. **Developer Guide** — development environment and project commands;
-11. **Self-evaluation** — final project assessment;
-12. **Future Work** — limitations and possible extensions.
+1. [**Concept**](sections/01-concept/index.md) — project motivation, context, and vision;
+2. [**Requirements**](sections/02-requirements/index.md) — functional and non-functional requirements;
+3. [**Design**](sections/03-design/index.md) — architecture, domain model, ports, adapters, and design rationale;
+4. [**Development**](sections/04-development/index.md) — implementation and technological choices;
+5. [**Validation**](sections/05-validation/index.md) — automated and manual testing evidence;
+6. [**Release**](sections/06-release/index.md) — licensing, versioning, and release process;
+7. [**Deployment**](sections/07-deployment/index.md) — local and containerized execution;
+8. [**CI/CD**](sections/08-cicd/index.md) — GitHub Actions and automation;
+9. [**User Guide**](sections/09-userguide/index.md) — end-user workflow across the BridgeIT frontend;
+10. [**Developer Guide**](sections/10-devguide/index.md) — development environment and project commands;
+11. [**Self-evaluation**](sections/11-selfevaluation/index.md) — final project assessment;
+12. [**Future Work**](sections/12-future/index.md) — limitations and possible extensions.
 
 ## Validation
 
@@ -84,11 +84,11 @@ The manual acceptance session exercises the implemented human-in-the-loop workfl
 - invalid-transition enforcement after validation;
 - frontend Guide availability.
 
-Detailed test steps, Requirement identifiers, lifecycle transitions, and results are documented in the **Validation** chapter.
+Detailed test steps, Requirement identifiers, lifecycle transitions, and results are documented in the [**Validation** chapter](sections/05-validation/index.md).
 
 ## Architecture and Technologies
 
-BridgeIT adopts **Hexagonal Architecture (Ports and Adapters)** and **Domain-Driven Design**.
+BridgeIT adopts **Hexagonal Architecture (Ports and Adapters)** and **Domain-Driven Design**. The architectural rationale is documented in [**Design**](sections/03-design/index.md), while implementation choices are detailed in [**Development**](sections/04-development/index.md).
 
 The implemented technology stack includes:
 
@@ -109,7 +109,7 @@ The separation between core logic and technical adapters keeps persistence and A
 
 ## Current Scope
 
-The final implementation deliberately prioritizes the complete:
+The current implementation prioritizes the complete:
 
 **Requirement → AI Analysis → Human Validation**
 
@@ -123,11 +123,11 @@ The following capabilities remain outside the implemented core scope:
 - richer traceability-link management;
 - derived artifact generation.
 
-These remain possible future extensions of the current design.
+These remain possible future extensions of the current design and are discussed in [**Future Work**](sections/12-future/index.md). This prioritization reflects the scope implemented and validated to date; final scope remains subject to instructor feedback before submission.
 
 ## Local Preview
 
-The report is built with Jekyll. From the repository root:
+The report is built with Jekyll. Complete development and execution guidance is available in the [**Developer Guide**](sections/10-devguide/index.md). From the repository root:
 
 ```bash
 bundle install
