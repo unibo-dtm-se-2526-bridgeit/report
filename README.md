@@ -69,6 +69,7 @@ The report follows the structure provided by the Software Engineering course and
 10. [**Developer Guide**](sections/10-devguide/index.md) — development environment and project commands;
 11. [**Self-evaluation**](sections/11-selfevaluation/index.md) — final project assessment;
 12. [**Future Work**](sections/12-future/index.md) — limitations and possible extensions.
+13. [**Usage of Generative AI**](sections/13-genai/index.md) — how Claude and ChatGPT were used as collaborators, not substitutes.
 
 ## Validation
 
