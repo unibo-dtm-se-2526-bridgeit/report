@@ -44,7 +44,7 @@ feat: add AI Gateway and validation endpoints
 fix: switch the default Gemini model
 docs: complete design section
 style: apply ruff format
-chore: import roadmap into the artifact repository
+chore: clean up repository configuration
 ```
 
 The main prefixes are `feat`, `fix`, `docs`, `test`, `refactor`, `style`, `chore`, and `ci`. This convention makes the Git history easier to inspect and supports the release automation inherited from the course template through semantic-release.
@@ -61,7 +61,7 @@ Non-trivial changes are integrated through GitHub pull requests. A pull request 
 
 Review comments are resolved before integration whenever they identify an inconsistency, a missing test, or documentation that no longer reflects the implementation.
 
-GitHub Issues are used for concrete development tasks. Issues can be assigned to a team member, associated with a milestone, and added to the organization-level `BridgeIT Roadmap` project. The project board tracks work through states such as `Backlog`, `Next`, `WIP`, `Review`, and `Done`. Milestones group related issues into larger increments such as domain modeling, persistence, AI integration, frontend development, testing, and release preparation.
+GitHub Issues are used for concrete development tasks. Issues can be assigned to a team member, associated with a milestone, and used to keep the development work organized. Milestones group related issues into larger increments such as domain modeling, persistence, AI integration, frontend development, testing, and release preparation.
 
 ## Implementation details
 
