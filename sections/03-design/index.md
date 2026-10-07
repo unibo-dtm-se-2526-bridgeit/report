@@ -25,22 +25,16 @@ Four layers, from the inside out:
 3. **Adapters** (`bridgeit/adapters/`) — driving adapters that translate an external protocol into calls to use cases; currently a single **FastAPI** adapter.
 4. **Infrastructure** (`bridgeit/infrastructure/`) — driven adapters implementing the ports declared in the application layer: `SQLiteRequirementRepository` for persistence, `GeminiAIGateway` for the external AI service.
 
-Dependency direction (always inward):
+Dependency direction is illustrated in the component diagram below. The diagram was generated from validated PlantUML source and reflects the currently implemented components.
 
-```
-Adapters (FastAPI)  ─────depends on─────►  Application (Use Cases)  ─────depends on─────►  Domain
-                                                    ▲
-                                                    │ implements
-                                                    │
-Infrastructure (SQLite, Gemini)  ──────────────────┘
-```
+![BridgeIT architecture and component diagram](../../pictures/bridgeit-architecture-diagram.png)
 
 Nothing in `domain/` or `application/` imports from `adapters/` or `infrastructure/` — only the reverse. This is what allows the persistence technology and the AI provider to be swapped without touching business logic, and what makes the domain and use cases testable in isolation from any external system.
 
 ### Responsibilities of each component
 
 - **Domain** — models `Requirement` as the aggregate root of the "requirement lifecycle" bounded context, together with its value objects and invariants (see Modelling below). Owns all business rules, including which status transitions are valid.
-- **Application / Use Cases** — the main business operations are represented by `SubmitRequirementUseCase`, `AnalyseRequirementUseCase`, and `ValidateRequirementUseCase`. These use cases fetch or create `Requirement` objects through application ports, ask the domain to perform lifecycle operations, ask the AI gateway for an analysis when needed, and persist the result. Requirement retrieval is currently implemented as a thin API-level operation over the repository rather than as a dedicated use case. The use cases contain **no** HTTP or SQL code.
+- **Application / Use Cases** — the main business operations are represented by `SubmitRequirementUseCase`, `AnalyseRequirementUseCase`, and `ValidateRequirementUseCase`. These use cases fetch or create `Requirement` objects through application ports, ask the domain to perform lifecycle operations, ask the AI gateway for an analysis when needed, and persist the result. Requirement retrieval is currently implemented as a thin API-level operation over the repository rather than as a dedicated use case; this is a small acknowledged architectural shortcut. The use cases contain **no** HTTP or SQL code.
 - **Application / Ports** — abstract interfaces (`RequirementRepository`, `AIGateway`) defining *what* the application needs from the outside world, without saying *how*. `AIGatewayError` is the single error type use cases need to know about, regardless of which AI provider is behind it.
 - **Adapters (driving)** — the FastAPI routes in `bridgeit/adapters/api/` (`main.py`, `analysis_router.py`) translate incoming HTTP requests into use-case calls and translate results (or exceptions) back into HTTP responses. `errors.py` defines a single JSON error shape (`{"error": {"code", "message"}}`) shared by every endpoint, via `ApiError`.
 - **Infrastructure (driven)** — `SQLiteRequirementRepository` implements `RequirementRepository` on the standard-library `sqlite3` module; `GeminiAIGateway` implements `AIGateway` on Google's `google-genai` client library, including retry logic for transient failures (see Development chapter).
@@ -106,6 +100,12 @@ All interaction is synchronous request/response over HTTP (FastAPI). The two mos
 2. The use case fetches the `Requirement` and asks the domain to transition its status according to the decision (`approve` / `edit` / `reject`).
 3. It persists the result via the repository.
 4. The route translates the result or exception into an HTTP response.
+
+## Sequence diagrams
+
+The following sequence diagram shows the implemented AI-assisted analysis flow, including the interaction between the frontend, FastAPI route, application use case, AI gateway, and persistence layer.
+
+![BridgeIT analyse sequence diagram](../../pictures/bridgeit-analyse-sequence-diagram.png)
 
 ## Behaviour
 
