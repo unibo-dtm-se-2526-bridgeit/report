@@ -92,7 +92,7 @@ The API uses a common error representation:
 }
 ```
 
-The `ApiError` contract is already applied to `GET /requirements/{id}` and is the required format for the analysis and validation endpoints as they evolve. A shared error structure keeps frontend handling consistent and prevents each endpoint from inventing a different response shape.
+The `ApiError` contract is applied to `GET /requirements/{id}` and to the analysis and validation endpoints. A shared error structure keeps frontend handling consistent and prevents each endpoint from inventing a different response shape.
 
 The Gemini adapter translates provider-specific responses into BridgeIT domain concepts. Provider response formats are therefore confined to the driven adapter and are not exposed directly to the domain or frontend.
 
@@ -156,12 +156,12 @@ The frontend intentionally uses vanilla HTML, CSS, and JavaScript. A framework w
 ### Backend frameworks and libraries
 
 - **FastAPI** exposes the HTTP API and provides automatic OpenAPI generation.
-- **Pydantic** validates and serializes transport-layer request and response models.
+- **Pydantic** validates and serializes request/response DTOs used by the API boundary.
 - **`sqlite3`** provides direct SQL access to SQLite without an ORM.
 - **`google-genai`** provides the client used by the Gemini adapter.
 - **Python abstract interfaces** define the `RequirementRepository` and `AIGateway` ports, keeping use cases independent from concrete adapters.
 
-FastAPI and Pydantic belong to the driving-adapter boundary. They must not be imported into domain entities or value objects.
+FastAPI is used at the driving-adapter boundary, while Pydantic is used for API-facing DTOs in the application package. Neither is imported into domain entities or value objects.
 
 ### Testing and static verification
 
@@ -174,7 +174,7 @@ FastAPI and Pydantic belong to the driving-adapter boundary. They must not be im
 - **Poetry** manages Python dependencies and the project environment.
 - **Poe the Poet** exposes repeatable project commands on top of Poetry.
 
-At the time this section was drafted, the project reported 58 automated tests. The definitive test distribution, success rate, and coverage results belong in the [Validation](../05-validation/) section and must be updated from actual CI output before final submission.
+The current test suite contains 58 automated tests. The definitive test distribution, success rate, and coverage results belong in the [Validation](../05-validation/) section and must be updated from actual CI output before final submission.
 
 ### Frontend
 
