@@ -1,8 +1,9 @@
 ---
+
 title: Design
 has_children: false
 nav_order: 4
----
+------------
 
 # Design
 
@@ -10,114 +11,154 @@ This chapter describes the design of BridgeIT, the strategies adopted to satisfy
 
 ## Architecture
 
-BridgeIT adopts a **Hexagonal Architecture** (Ports and Adapters), combined with **Domain-Driven Design** principles for the core domain model.
+BridgeIT adopts a **Hexagonal Architecture (Ports and Adapters)** combined with **Domain-Driven Design (DDD)** principles for the core domain model.
 
 ### Why Hexagonal Architecture
 
-A plain layered architecture was considered but discarded: in a layered style, the persistence and AI-provider details tend to leak upward into business logic (e.g. domain code importing a SQL library, or knowing about Gemini's response format). Hexagonal Architecture instead makes the domain and application layers depend on abstract **ports**, and pushes every concrete technology (SQLite, Google Gemini) to the edges as **adapters**. This was considered worth the extra indirection for two reasons specific to this project: the AI provider was expected to be revisited during development (the team did in fact switch Gemini models mid-project without touching any use case or domain code), and the domain rules around a requirement's lifecycle needed to be unit-testable without a database or network connection.
+A plain layered architecture was considered but discarded because persistence and AI-provider details could more easily leak into the business logic. In BridgeIT, the domain and application layers depend on abstract **ports**, while concrete technologies such as SQLite and Google Gemini are placed in infrastructure adapters.
+
+This separation was considered particularly useful because the AI provider may change during development without requiring modifications to the application use cases or domain logic. It also allows the main business rules to be tested independently from databases, HTTP requests, and external AI services.
 
 ### High-level overview
 
-Four layers, from the inside out:
+The system is organized into four main layers:
 
-1. **Domain** (`bridgeit/domain/`) — pure business logic and rules, no framework or infrastructure dependency.
-2. **Application** (`bridgeit/application/`) — use cases that orchestrate the domain, plus **ports**: abstract interfaces the application depends on but does not implement.
-3. **Adapters** (`bridgeit/adapters/`) — driving adapters that translate an external protocol into calls to use cases; currently a single **FastAPI** adapter.
-4. **Infrastructure** (`bridgeit/infrastructure/`) — driven adapters implementing the ports declared in the application layer: `SQLiteRequirementRepository` for persistence, `GeminiAIGateway` for the external AI service.
+1. **Domain** (`bridgeit/domain/`) — contains the business entities, value objects, lifecycle rules, and invariants. It has no dependency on FastAPI, SQLite, or the AI provider.
+2. **Application** (`bridgeit/application/`) — contains the main use cases and the abstract ports required by the application.
+3. **Adapters** (`bridgeit/adapters/`) — contains the driving HTTP adapter implemented with FastAPI and the related request/response handling.
+4. **Infrastructure** (`bridgeit/infrastructure/`) — contains the concrete driven adapters for persistence and AI integration, namely SQLite and Google Gemini.
 
-Dependency direction is illustrated in the component diagram below. The diagram was generated from validated PlantUML source and reflects the currently implemented components.
+The dependency direction is inward: the outer layers depend on the abstractions and business logic of the inner layers, while the domain does not depend on external technologies.
 
-![BridgeIT architecture and component diagram](../../pictures/bridgeit-architecture-diagram.png)
-
-Nothing in `domain/` or `application/` imports from `adapters/` or `infrastructure/` — only the reverse. This is what allows the persistence technology and the AI provider to be swapped without touching business logic, and what makes the domain and use cases testable in isolation from any external system.
+The application layer therefore acts as the coordination point between the domain model and the external services. The concrete infrastructure implementations satisfy the interfaces defined by the application ports.
 
 ### Responsibilities of each component
 
-- **Domain** — models `Requirement` as the aggregate root of the "requirement lifecycle" bounded context, together with its value objects and invariants (see Modelling below). Owns all business rules, including which status transitions are valid.
-- **Application / Use Cases** — the main business operations are represented by `SubmitRequirementUseCase`, `AnalyseRequirementUseCase`, and `ValidateRequirementUseCase`. These use cases fetch or create `Requirement` objects through application ports, ask the domain to perform lifecycle operations, ask the AI gateway for an analysis when needed, and persist the result. Requirement retrieval is currently implemented as a thin API-level operation over the repository rather than as a dedicated use case; this is a small acknowledged architectural shortcut. The use cases contain **no** HTTP or SQL code.
-- **Application / Ports** — abstract interfaces (`RequirementRepository`, `AIGateway`) defining *what* the application needs from the outside world, without saying *how*. `AIGatewayError` is the single error type use cases need to know about, regardless of which AI provider is behind it.
-- **Adapters (driving)** — the FastAPI routes in `bridgeit/adapters/api/` (`main.py`, `analysis_router.py`) translate incoming HTTP requests into use-case calls and translate results (or exceptions) back into HTTP responses. `errors.py` defines a single JSON error shape (`{"error": {"code", "message"}}`) shared by every endpoint, via `ApiError`.
-- **Infrastructure (driven)** — `SQLiteRequirementRepository` implements `RequirementRepository` on the standard-library `sqlite3` module; `GeminiAIGateway` implements `AIGateway` on Google's `google-genai` client library, including retry logic for transient failures (see Development chapter).
+* **Domain** — models `Requirement` as the aggregate root of the requirement lifecycle, together with its value objects and invariants. It owns the business rules governing valid state transitions.
+* **Application / Use Cases** — the main business operations are represented by `SubmitRequirementUseCase`, `AnalyseRequirementUseCase`, and `ValidateRequirementUseCase`. These use cases coordinate repositories, the AI gateway, and domain objects, without containing HTTP or SQL-specific code. Requirement retrieval is currently implemented directly in the API layer as a thin repository operation.
+* **Application / Ports** — `RequirementRepository` and `AIGateway` define the abstractions required by the application layer. The application depends on these interfaces rather than on concrete infrastructure technologies. `AIGatewayError` provides an implementation-independent error type for AI-related failures.
+* **Adapters (driving)** — the FastAPI routes in `bridgeit/adapters/api/` translate HTTP requests into application operations and convert domain/application errors into HTTP responses. `ApiError` provides a common structured error representation.
+* **Infrastructure (driven)** — `SQLiteRequirementRepository` implements the persistence port using Python's standard-library `sqlite3` module, while `GeminiAIGateway` implements the AI port using Google's `google-genai` client.
 
 ## Infrastructure
 
-BridgeIT is **not a distributed system**: it runs as a single Python process (the FastAPI application) with an embedded SQLite database file on the same machine, serving a browser-based frontend running on the same host during development.
+BridgeIT is **not a distributed system**. It runs as a single Python process containing the FastAPI backend and uses a local SQLite database file for persistent storage.
 
-The only component outside the process boundary is the **Google Gemini API**, called over HTTPS as a third-party dependency for AI-assisted requirement analysis. There is no load balancer, message broker, or service discovery: a single instance is sufficient for the scope of this academic project.
+The browser-based frontend communicates with the backend through HTTP. During local development, the frontend can be opened as local files or served from a local development server.
+
+The only external service involved in the application workflow is the **Google Gemini API**, which is accessed over HTTPS for AI-assisted requirement analysis.
+
+The project does not require a load balancer, message broker, service discovery mechanism, or multiple backend instances. A single local application instance is sufficient for the scope of the project.
 
 ## Modelling
 
 ### Domain-driven design (DDD) modelling
 
-The project has a single bounded context, **Requirement Lifecycle**, covering submission of a requirement, its AI-assisted analysis, and its human validation.
+The project contains a single bounded context, **Requirement Lifecycle**, which covers the submission, AI-assisted analysis, refinement, and human validation of requirements.
 
-Domain concepts:
+The main domain concepts are:
 
-- **`Requirement`** (entity / aggregate root) — identified by an id; holds a `RequirementText` and a `RequirementStatus`; the only object allowed to change its own status, and only through valid transitions (`Submitted → Analyzed → Validated / Clarified / Rejected`). An invalid transition raises `InvalidStateTransitionError`.
-- **`RequirementText`** (value object) — wraps the raw requirement text.
-- **`RequirementStatus`** (value object / enum) — the finite set of lifecycle states above.
-- **`AIAnalysis`** (value object) — the outcome of an AI analysis: a `QualityScore` plus a list of issues. Suggested revisions are not part of the current implementation.
-- **`QualityScore`** (value object / enum) — `ready_for_validation` or `needs_clarification`. Deliberately a **binary category, not a numeric score**: a fabricated percentage would suggest a precision the AI analysis doesn't actually have.
+* **`Requirement`** — entity and aggregate root, identified by a unique id. It contains the current `RequirementText` and `RequirementStatus` and is responsible for enforcing valid lifecycle transitions.
+* **`RequirementText`** — immutable value object that contains the natural-language text of the requirement.
+* **`RequirementStatus`** — enumeration representing the requirement lifecycle: `Submitted`, `Analyzed`, `Clarified`, `Validated`, and `Rejected`.
+* **`AIAnalysis`** — immutable value object containing the result of an AI-assisted analysis, namely a quality indication and a list of identified issues. The current implementation does not persist AI analysis results separately.
+* **`QualityScore`** — enumeration representing the two quality indications produced by the AI analysis: `ready_for_validation` and `needs_clarification`.
 
-Repository: `RequirementRepository` is the single repository of the bounded context, with two implementations — `SQLiteRequirementRepository` for production and an in-memory fake for tests (see Validation chapter).
+The requirement lifecycle is controlled by the `Requirement` aggregate itself. The implemented transitions are:
 
-No explicit domain events are used: the workflow is a simple, synchronous request/response cycle (submit → analyse → validate) rather than an event-driven one, so an event bus would add complexity without a corresponding benefit at this scale.
+`Submitted → Analyzed → Validated`
+
+or:
+
+`Submitted → Analyzed → Clarified → Analyzed`
+
+and:
+
+`Submitted → Analyzed → Rejected`
+
+After being validated or rejected, a requirement reaches a final state. A clarified requirement must be analysed again before another human validation decision can be recorded.
+
+The `RequirementRepository` is the only persistence abstraction used by the application. It has two implementations: `SQLiteRequirementRepository` for the actual application and an in-memory fake used by tests.
 
 ### Object-oriented modelling
 
-| Type | Kind | Role |
-|---|---|---|
-| `Requirement` | Entity | Aggregate root; owns `RequirementText` + `RequirementStatus`; enforces transition rules |
-| `RequirementText` | Value object | Wraps requirement text |
-| `RequirementStatus` | Enum | Submitted / Analyzed / Validated / Clarified / Rejected |
-| `AIAnalysis` | Value object | Holds `QualityScore` + issues list |
-| `QualityScore` | Enum | ready_for_validation / needs_clarification |
-| `RequirementRepository` | Port (abstract) | save / get_by_id |
-| `AIGateway` | Port (abstract) | analyse(text) returns `AIAnalysis`; raises `AIGatewayError` |
-| `AnalyseRequirementUseCase` | Use case | Orchestrates repository + AI gateway for FR-02/FR-04 |
-| `ValidateRequirementUseCase` | Use case | Orchestrates repository + domain transition for FR-05 |
-| `SQLiteRequirementRepository` | Adapter (driven) | Implements `RequirementRepository` on plain `sqlite3` |
-| `GeminiAIGateway` | Adapter (driven) | Implements `AIGateway` on Google's `google-genai` client, with retry |
-| `ApiError` | Adapter (driving) | Shared exception, produces a structured JSON error response |
+| Type                          | Kind                    | Role                                                                                        |
+| ----------------------------- | ----------------------- | ------------------------------------------------------------------------------------------- |
+| `Requirement`                 | Entity / Aggregate Root | Owns the current requirement text and lifecycle status and enforces valid state transitions |
+| `RequirementText`             | Value Object            | Encapsulates the requirement text                                                           |
+| `RequirementStatus`           | Enum                    | Represents Submitted / Analyzed / Clarified / Validated / Rejected                          |
+| `AIAnalysis`                  | Value Object            | Contains the AI quality indication and identified issues                                    |
+| `QualityScore`                | Enum                    | Represents `ready_for_validation` or `needs_clarification`                                  |
+| `RequirementRepository`       | Port                    | Abstract persistence interface with `save` and `get_by_id`                                  |
+| `AIGateway`                   | Port                    | Abstract interface for requesting an AI analysis                                            |
+| `SubmitRequirementUseCase`    | Use Case                | Creates and persists a new requirement                                                      |
+| `AnalyseRequirementUseCase`   | Use Case                | Retrieves a requirement, requests an AI analysis, updates its status, and persists it       |
+| `ValidateRequirementUseCase`  | Use Case                | Applies the human validation decision and persists the resulting state                      |
+| `SQLiteRequirementRepository` | Adapter (driven)        | Implements persistence using SQLite                                                         |
+| `GeminiAIGateway`             | Adapter (driven)        | Implements the AI gateway using Google Gemini                                               |
+| `ApiError`                    | Adapter (driving)       | Represents structured API errors returned to clients                                        |
 
 ### In case of a distributed system
 
-Not applicable — see Infrastructure above.
+This aspect is not applicable because BridgeIT is implemented as a single-process application with a local database and one external AI service.
 
 ## Interaction
 
-All interaction is synchronous request/response over HTTP (FastAPI). The two most significant flows:
+All application interactions are synchronous request/response operations over HTTP.
 
-**Analyse a requirement (FR-02, FR-04)** — `POST /requirements/{id}/analyse`
-1. The route handler calls `AnalyseRequirementUseCase.execute(id)`.
-2. The use case fetches the `Requirement` via `RequirementRepository`.
-3. It asks `AIGateway.analyse(text)` for an `AIAnalysis`.
-4. It persists the updated requirement via the repository.
-5. The route translates the result (or any `RequirementNotFoundError` / `InvalidStateTransitionError` / `AIGatewayError`) into the appropriate HTTP status and JSON body.
+### Analyse a requirement
 
-**Validate a requirement (FR-05)** — `POST /requirements/{id}/validate`
-1. The route handler calls `ValidateRequirementUseCase.execute(id, decision, modified_text)`.
-2. The use case fetches the `Requirement` and asks the domain to transition its status according to the decision (`approve` / `edit` / `reject`).
-3. It persists the result via the repository.
-4. The route translates the result or exception into an HTTP response.
+The main analysis flow is initiated through:
 
-## Sequence diagrams
+`POST /requirements/{id}/analyse`
 
-The following sequence diagram shows the implemented AI-assisted analysis flow, including the interaction between the frontend, FastAPI route, application use case, AI gateway, and persistence layer.
+The interaction proceeds as follows:
 
-![BridgeIT analyse sequence diagram](../../pictures/bridgeit-analyse-sequence-diagram.png)
+1. The FastAPI route receives the request.
+2. The route invokes `AnalyseRequirementUseCase`.
+3. The use case retrieves the requirement through `RequirementRepository`.
+4. The use case sends the current requirement text to `AIGateway`.
+5. The Gemini adapter performs the AI analysis and returns an `AIAnalysis`.
+6. The use case updates the requirement status from `Submitted` or `Clarified` to `Analyzed`.
+7. The updated requirement is persisted through the repository.
+8. The API returns the analysis result, including the quality indication and any identified issues.
+
+The AI result is therefore returned to the client, while the authoritative requirement state is updated separately through the domain lifecycle.
+
+### Validate a requirement
+
+Human validation is initiated through:
+
+`POST /requirements/{id}/validate`
+
+The interaction proceeds as follows:
+
+1. The FastAPI route receives the validation decision.
+2. The route invokes `ValidateRequirementUseCase`.
+3. The use case retrieves the requirement through `RequirementRepository`.
+4. The domain object applies the selected decision:
+
+   * `approve` → `Validated`;
+   * `edit` → `Clarified`, replacing the current text;
+   * `reject` → `Rejected`.
+5. The updated requirement is persisted through the repository.
+6. The API returns the resulting requirement status.
+
+Only this explicit human validation action can produce the final statuses `Validated` or `Rejected`.
 
 ## Behaviour
 
-`Requirement` is the only stateful domain object, and its state can only change through its own methods — never by an adapter setting a field directly. This is what lets `InvalidStateTransitionError` be raised consistently regardless of which adapter triggers the transition.
+`Requirement` is the only stateful domain object and controls its own lifecycle. External layers cannot arbitrarily assign a new status; instead, they must invoke domain operations such as `mark_analyzed`, `clarify`, `validate`, or `reject`.
 
-`GeminiAIGateway` is functionally stateless between calls, but wraps each call in **retry logic**: up to 3 attempts with a 1.5-second wait, only for transient errors (HTTP 429 rate-limit and 503 service-unavailable); a non-retryable error such as 401 (invalid key) fails immediately rather than wasting two more attempts on something that cannot succeed on retry (see Development chapter for the reasoning).
+When an invalid transition is attempted, the domain raises `InvalidStateTransitionError`. This rule is therefore independent of whether the operation originated from the web interface or from another adapter.
 
-State is updated and persisted synchronously, in the same request, immediately after each use case operation — there is no separate background process or job queue.
+The `GeminiAIGateway` is functionally stateless between requests. It includes retry logic for selected transient failures, specifically rate limiting (`429`) and service unavailability (`503`), while non-retryable errors such as authentication failures are returned immediately.
+
+State updates are synchronous: the requirement is updated and persisted during the same request that performs the corresponding use case operation. There is no background worker, asynchronous job queue, or event-driven mechanism.
 
 ## Data-related aspects
 
-Persistent data is minimal by design: a single SQLite table stores each requirement's `id`, `text` and current `status`.
+Persistent data is intentionally minimal. A single SQLite table stores the current state of each requirement:
 
 ```sql
 CREATE TABLE IF NOT EXISTS requirements (
@@ -127,10 +168,20 @@ CREATE TABLE IF NOT EXISTS requirements (
 );
 ```
 
-The result of an AI analysis (`quality_indication`, `issues`) is **not** persisted — it is returned directly in the API response and recomputed on demand the next time `/analyse` is called. This keeps the schema minimal and avoids the added complexity of invalidating a stored analysis if the requirement text later changes.
+The stored data therefore consists of:
 
-Plain `sqlite3` (standard library) was chosen over an ORM such as SQLAlchemy to keep the persistence adapter as thin as possible: the goal of Hexagonal Architecture is for infrastructure to be swappable, and a thin adapter with no ORM-specific base classes leaking into the domain achieves that more directly than an ORM would, at the scale of this project.
+* the requirement identifier;
+* the current requirement text;
+* the current lifecycle status.
 
-Only the persistence adapter (`SQLiteRequirementRepository`) ever queries the database, and it is reached exclusively through the `RequirementRepository` port — never called directly by a use case or a route (with the exception of a temporary, explicitly flagged shortcut in `main.py`'s pre-existing `/requirements` routes, predating the AI Gateway work, earmarked for the same refactor).
+The application does **not** persist a complete revision history. When a Business Analyst edits a requirement, the existing text is replaced by the revised text while the identifier is preserved.
 
-Concurrent access is handled by SQLite itself (file-level locking); the project's scope — a single local instance used by one Business Analyst at a time — does not require any additional concurrency handling on top of that.
+The result of an AI analysis is also **not persisted**. The `AIAnalysis` object is returned directly by the analysis endpoint and is recomputed when the requirement is analysed again. This keeps the current schema small and avoids introducing a separate persistence model for analysis results.
+
+SQLite was implemented using the standard-library `sqlite3` module instead of an ORM such as SQLAlchemy. This keeps the persistence adapter lightweight and prevents ORM-specific concepts from leaking into the domain or application layers.
+
+The persistence adapter is the only component that directly queries the SQLite database. The application layer depends only on the `RequirementRepository` abstraction.
+
+The current implementation contains a small architectural shortcut in the requirement retrieval endpoint: `GET /requirements/{id}` accesses the repository directly instead of using a dedicated retrieval use case. This does not affect the domain rules, but it represents a minor technical-debt item that could be refactored in a future iteration.
+
+Concurrency is delegated to SQLite's own locking mechanism. Given the scope of the project, which assumes a single local instance and one primary Business Analyst at a time, no additional concurrency infrastructure is required.
