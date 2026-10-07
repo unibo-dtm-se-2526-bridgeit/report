@@ -31,6 +31,10 @@ The dependency direction is inward: the outer layers depend on the abstractions 
 
 The application layer therefore acts as the coordination point between the domain model and the external services. The concrete infrastructure implementations satisfy the interfaces defined by the application ports.
 
+![BridgeIT hexagonal architecture](../../pictures/bridgeit-hexagonal-architecture.png)
+
+The diagram shows the four layers as concentric regions: the FastAPI driving adapter calls the application use cases, which work on the domain model and reach persistence and the AI provider only through the `RequirementRepository` and `AIGateway` ports, implemented by the SQLite and Gemini driven adapters.
+
 ### Responsibilities of each component
 
 * **Domain** — models `Requirement` as the aggregate root of the requirement lifecycle, together with its value objects and invariants. It owns the business rules governing valid state transitions.
@@ -97,6 +101,10 @@ The `RequirementRepository` is the only persistence abstraction used by the appl
 | `GeminiAIGateway`             | Adapter (driven)        | Implements the AI gateway using Google Gemini                                               |
 | `ApiError`                    | Adapter (driving)       | Represents structured API errors returned to clients                                        |
 
+![BridgeIT domain model and ports](../../pictures/bridgeit-domain-class-diagram.png)
+
+The class diagram summarises the table above: `Requirement` is the aggregate root and owns its `RequirementText` and `RequirementStatus`; `AIAnalysis` is a separate immutable value object returned by the `AIGateway` port; the two ports are realised by the infrastructure adapters.
+
 ### In case of a distributed system
 
 This aspect is not applicable because BridgeIT is implemented as a single-process application with a local database and one external AI service.
@@ -125,6 +133,8 @@ The interaction proceeds as follows:
 
 The AI result is therefore returned to the client, while the authoritative requirement state is updated separately through the domain lifecycle.
 
+![Sequence diagram of the analyse interaction](../../pictures/bridgeit-analyse-sequence-diagram.png)
+
 ### Validate a requirement
 
 Human validation is initiated through:
@@ -151,6 +161,10 @@ Only this explicit human validation action can produce the final statuses `Valid
 `Requirement` is the only stateful domain object and controls its own lifecycle. External layers cannot arbitrarily assign a new status; instead, they must invoke domain operations such as `mark_analyzed`, `clarify`, `validate`, or `reject` (and `ensure_can_be_analyzed` to check, without changing state, whether an analysis is allowed).
 
 When an invalid transition is attempted, the domain raises `InvalidStateTransitionError`. This rule is therefore independent of whether the operation originated from the web interface or from another adapter.
+
+![Requirement lifecycle state diagram](../../pictures/bridgeit-requirement-state-diagram.png)
+
+The state diagram distinguishes the two kinds of transition: an AI analysis can only move a requirement to `Analyzed`, while `Validated`, `Rejected`, and `Clarified` can be reached only through an explicit human decision. `Validated` and `Rejected` are final states.
 
 The `GeminiAIGateway` is functionally stateless between requests. It includes retry logic for selected transient failures, specifically rate limiting (`429`) and service unavailability (`503`), while non-retryable errors such as authentication failures are returned immediately.
 
