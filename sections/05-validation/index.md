@@ -73,7 +73,7 @@ The suite contains **58 automated tests**, organized to mirror the production pa
 | Success rate | 100% |
 | Statement coverage (production code) | 95% |
 
-The latest completed validation run recorded 58 passing tests with no failures and 95% statement coverage of production code. The HTML coverage report is uploaded as a build artifact by the CI workflow, so the result can be inspected for the corresponding commit.
+The recorded validation run documented in this report produced 58 passing tests with no failures and 95% statement coverage of production code. The HTML coverage report is uploaded as a CI build artifact, so the exact result can be inspected for the corresponding run. Before final submission, the same values should be re-confirmed against the latest successful CI run.
 
 ## Integration testing
 
