@@ -61,7 +61,7 @@ Any other type of commit will not update the version at any level.
 This automation, powered by `semantic-release`, was not functional for the first part of the project: a misconfigured GitHub token caused the release job to fail on every merge to `master`, silently, for several weeks before being diagnosed and fixed. The pipeline has been fully operational, including automatic release creation, since that fix.
 ### Release history and next version calculation
 
-The final artifact contains the following releases:
+The repository history contains the following published releases:
 
 | Release | Type | Main change |
 |---|---|---|
@@ -69,5 +69,6 @@ The final artifact contains the following releases:
 | `bridgeit-v1.0.1` | Patch | Semantic-release and CI workflow repair |
 | `bridgeit-v1.0.2` | Patch | Frontend requirement feedback and consistency improvements |
 | `bridgeit-v1.0.3` | Patch | Final artifact README scope and report-link updates |
+| `bridgeit-v1.0.4` | Patch | Documentation and repository maintenance updates |
 
-Starting from `1.0.3`, semantic-release follows the Conventional Commits history to determine the next version. A backward-compatible bug fix (`fix:`) would produce `1.0.4`; a new backward-compatible feature (`feat:`) would produce `1.1.0`; and a breaking change would produce `2.0.0`. Documentation-only commits do not require a version increment.
+The release history demonstrates that the team used Semantic Versioning to compute subsequent versions rather than keeping a single manually assigned release number. Starting from `1.0.4`, a backward-compatible bug fix (`fix:`) would produce `1.0.5`; a new backward-compatible feature (`feat:`) would produce `1.1.0`; and a breaking change would produce `2.0.0`. The exact final version used for submission must be the same version referenced by the final artifact metadata, changelog, README, and GitHub release/tag.
