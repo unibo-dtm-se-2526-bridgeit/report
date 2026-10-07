@@ -52,8 +52,10 @@ All other technical choices (`sqlite3` over an ORM, vanilla HTML/CSS/JavaScript 
 
 ## Glossary
 
+> **Implementation status.** F1–F5 are implemented in the current artifact. F6 and F7 remain planned extensions and are not implemented in the current application, API, or persistence layers; they are discussed in the [Future work](../12-future/) section.
+
 - **Requirement**: a single unit of business or system intent, originally expressed in natural language, tracked through its lifecycle from submission to validation
-- **AI Analysis**: the outcome of an AI-assisted evaluation of a requirement's text, including a quality indication and, where applicable, a suggested revision — always a proposal, never an automatic change
+- **AI Analysis**: the outcome of an AI-assisted evaluation of a requirement's text, including a quality indication and, where applicable, a list of identified issues — always a proposal, never an automatic change
 - **Derived Artifact**: a structured, engineering-facing object (e.g. a backlog item) created from a validated requirement, retaining an explicit reference back to it
 - **Traceability Link**: an explicit, inspectable relationship connecting a requirement to a derived artifact or another object derived from it
 - **Quality Indication**: a non-binding assessment of a requirement's clarity, completeness, and freedom from ambiguity, intended to guide — not replace — human judgment
@@ -62,12 +64,12 @@ All other technical choices (`sqlite3` over an ORM, vanilla HTML/CSS/JavaScript 
 ## Acceptance Criteria for the requirements
 
 - F1: given a non-empty description, submitting it stores a requirement with a unique identifier and an initial status; retrieving it later returns the stored text unchanged
-- F2: given a requirement eligible for analysis, requesting one produces an AI analysis associated with its identifier, without altering the requirement's stored text or status
-- F3: revising a requirement's text keeps its identifier unchanged; the relationship between the original submission and the revision remains identifiable
-- F4: a quality indication distinguishes at least "ready for validation" from "needs clarification"; producing one does not, by itself, change the requirement's status
-- F5: an AI analysis awaiting review does not affect the requirement's authoritative state until a human decision is recorded; the recorded decision is retrievable together with the requirement
+- F2: given a requirement eligible for analysis, requesting one produces an AI analysis associated with its identifier; the requirement text is not autonomously modified by the AI and the requirement moves to `Analyzed`
+- F3: revising a requirement's text keeps its identifier unchanged; the current revised text is retrievable under the same identifier, while previous text revisions are not retained as history
+- F4: a quality indication distinguishes at least "ready for validation" from "needs clarification"; producing one moves an eligible requirement to `Analyzed` but does not constitute a human validation decision
+- F5: an AI analysis awaiting review does not itself produce a final requirement state; after a human decision is recorded, the resulting state is retrievable together with the requirement
 - F6: a traceability link between a requirement and a derived artifact is retrievable by querying either side of the relationship
 - F7: an artifact created from a requirement whose status is "Validated" retains an explicit reference to it; creation is refused for a requirement not yet Validated
-- NF1-NF10: verified through automated tests at the domain, application, and infrastructure layers (see Validation section) and through manual inspection of the codebase's module boundaries
+- NF1-NF9: verified through automated tests at the domain, application, infrastructure, and API layers (see Validation section) and through manual inspection of the codebase's module boundaries; NF10 is currently not implemented and is treated as future work
 - I1: the persistence adapter connects to and correctly reads/writes a SQLite database file, verified by integration tests
 - I2: the frontend is reachable through a standard web browser and successfully completes the full requirement lifecycle against the running API
