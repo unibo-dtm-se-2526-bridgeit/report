@@ -1,6 +1,6 @@
 # BridgeIT — Software Engineering Project Report
 
-![Status](https://img.shields.io/badge/status-finalization-brightgreen)
+![Status](https://img.shields.io/badge/status-final-brightgreen)
 ![Report](https://img.shields.io/badge/report-GitHub%20Pages-blue)
 ![Format](https://img.shields.io/badge/format-Markdown-lightgrey)
 
@@ -19,7 +19,7 @@ The project follows a **human-in-the-loop** principle: AI assists the Requiremen
 
 ## Current Project Status
 
-The central BridgeIT workflow has been implemented and validated end-to-end in the software artifact:
+The central BridgeIT workflow has been implemented and validated through automated tests and manual end-to-end acceptance evidence:
 
 `Submitted` → `Analyzed` → explicit Business Analyst decision
 
@@ -30,21 +30,6 @@ with the supported human outcomes:
 - `Reject` → `Rejected`
 
 A requirement in `Clarified` state can be analysed again and return to `Analyzed`. The `Edit` → `Clarified` → `Analyse` refinement cycle can therefore be repeated before a final validation decision is recorded.
-
-The project currently includes:
-
-- Hexagonal Architecture and Domain-Driven Design;
-- FastAPI and Pydantic backend;
-- SQLite persistence through Python's standard `sqlite3`;
-- Google Gemini integration behind an `AIGateway`;
-- vanilla HTML/CSS/JavaScript frontend;
-- automated testing and static verification with pytest, Ruff, and Mypy;
-- Docker and Docker Compose support;
-- GitHub Actions CI/CD and automated releases;
-- a complete User Guide;
-- recorded manual end-to-end acceptance evidence.
-
-The implemented and validated core workflow, together with the User Guide and Validation evidence, currently covers the team's prioritised end-to-end scope. Final editorial alignment, self-evaluation, and AI-tool-use disclosure are still being completed. The team is also awaiting instructor feedback on whether any additional capabilities should be included before final submission.
 
 ## Repository Organization
 
@@ -68,12 +53,12 @@ The report follows the structure provided by the Software Engineering course and
 9. [**User Guide**](sections/09-userguide/index.md) — end-user workflow across the BridgeIT frontend;
 10. [**Developer Guide**](sections/10-devguide/index.md) — development environment and project commands;
 11. [**Self-evaluation**](sections/11-selfevaluation/index.md) — final project assessment;
-12. [**Future Work**](sections/12-future/index.md) — limitations and possible extensions.
-13. [**Usage of Generative AI**](sections/13-genai/index.md) — how Claude and ChatGPT were used as collaborators, not substitutes.
+12. [**Future Work**](sections/12-future/index.md) — limitations and possible extensions;
+13. [**Usage of Generative AI**](sections/13-genai/index.md) — how generative AI tools were used as collaborators, not substitutes.
 
 ## Validation
 
-The manual acceptance session exercises the implemented human-in-the-loop workflow and records:
+The validation evidence exercises the implemented human-in-the-loop workflow and records:
 
 - Requirement creation;
 - AI-assisted analysis;
@@ -85,28 +70,7 @@ The manual acceptance session exercises the implemented human-in-the-loop workfl
 - invalid-transition enforcement after validation;
 - frontend Guide availability.
 
-Detailed test steps, Requirement identifiers, lifecycle transitions, and results are documented in the [**Validation** chapter](sections/05-validation/index.md).
-
-## Architecture and Technologies
-
-BridgeIT adopts **Hexagonal Architecture (Ports and Adapters)** and **Domain-Driven Design**. The architectural rationale is documented in [**Design**](sections/03-design/index.md), while implementation choices are detailed in [**Development**](sections/04-development/index.md).
-
-The implemented technology stack includes:
-
-- Python;
-- FastAPI;
-- Pydantic;
-- SQLite through Python's standard `sqlite3`;
-- Google Gemini through `google-genai`;
-- vanilla HTML, CSS, and JavaScript;
-- Poetry;
-- pytest;
-- Ruff;
-- Mypy;
-- Docker and Docker Compose;
-- GitHub Actions.
-
-The separation between core logic and technical adapters keeps persistence and AI-provider choices outside the domain model.
+Detailed test steps, Requirement identifiers, lifecycle transitions, and results are documented in the [**Validation chapter**](sections/05-validation/index.md).
 
 ## Current Scope
 
@@ -124,11 +88,11 @@ The following capabilities remain outside the implemented core scope:
 - richer traceability-link management;
 - derived artifact generation.
 
-These remain possible future extensions of the current design and are discussed in [**Future Work**](sections/12-future/index.md). This prioritization reflects the scope implemented and validated to date; final scope remains subject to instructor feedback before submission.
+These remain possible future extensions and are discussed in [**Future Work**](sections/12-future/index.md).
 
 ## Local Preview
 
-The report is built with Jekyll. Complete development and execution guidance is available in the [**Developer Guide**](sections/10-devguide/index.md). From the repository root:
+The report is built with Jekyll. From the repository root:
 
 ```bash
 bundle install
@@ -151,4 +115,4 @@ https://unibo-dtm-se-2526-bridgeit.github.io/report/
 
 BridgeIT was developed for the **Software Engineering** course of the **Digital Transformation Management** degree programme at the University of Bologna.
 
-The report documents both the implemented system and the engineering process used to design, develop, validate, release, and deploy it.
+The report documents the implemented system and the engineering process used to design, develop, validate, release, and deploy it.
