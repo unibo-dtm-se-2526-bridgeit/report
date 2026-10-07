@@ -40,7 +40,7 @@ Nothing in `domain/` or `application/` imports from `adapters/` or `infrastructu
 ### Responsibilities of each component
 
 - **Domain** — models `Requirement` as the aggregate root of the "requirement lifecycle" bounded context, together with its value objects and invariants (see Modelling below). Owns all business rules, including which status transitions are valid.
-- **Application / Use Cases** — one use case per user-facing action (`AnalyseRequirementUseCase`, `ValidateRequirementUseCase`, plus requirement submission/retrieval). A use case fetches a `Requirement` through its repository port, asks the domain to perform an operation, asks the AI gateway port for an analysis when needed, and persists the result. Use cases contain **no** HTTP or SQL code.
+- **Application / Use Cases** — the main business operations are represented by `SubmitRequirementUseCase`, `AnalyseRequirementUseCase`, and `ValidateRequirementUseCase`. These use cases fetch or create `Requirement` objects through application ports, ask the domain to perform lifecycle operations, ask the AI gateway for an analysis when needed, and persist the result. Requirement retrieval is currently implemented as a thin API-level operation over the repository rather than as a dedicated use case. The use cases contain **no** HTTP or SQL code.
 - **Application / Ports** — abstract interfaces (`RequirementRepository`, `AIGateway`) defining *what* the application needs from the outside world, without saying *how*. `AIGatewayError` is the single error type use cases need to know about, regardless of which AI provider is behind it.
 - **Adapters (driving)** — the FastAPI routes in `bridgeit/adapters/api/` (`main.py`, `analysis_router.py`) translate incoming HTTP requests into use-case calls and translate results (or exceptions) back into HTTP responses. `errors.py` defines a single JSON error shape (`{"error": {"code", "message"}}`) shared by every endpoint, via `ApiError`.
 - **Infrastructure (driven)** — `SQLiteRequirementRepository` implements `RequirementRepository` on the standard-library `sqlite3` module; `GeminiAIGateway` implements `AIGateway` on Google's `google-genai` client library, including retry logic for transient failures (see Development chapter).
@@ -62,7 +62,7 @@ Domain concepts:
 - **`Requirement`** (entity / aggregate root) — identified by an id; holds a `RequirementText` and a `RequirementStatus`; the only object allowed to change its own status, and only through valid transitions (`Submitted → Analyzed → Validated / Clarified / Rejected`). An invalid transition raises `InvalidStateTransitionError`.
 - **`RequirementText`** (value object) — wraps the raw requirement text.
 - **`RequirementStatus`** (value object / enum) — the finite set of lifecycle states above.
-- **`AIAnalysis`** (value object) — the outcome of an AI analysis: a `QualityScore` plus a list of issues.
+- **`AIAnalysis`** (value object) — the outcome of an AI analysis: a `QualityScore` plus a list of issues. Suggested revisions are not part of the current implementation.
 - **`QualityScore`** (value object / enum) — `ready_for_validation` or `needs_clarification`. Deliberately a **binary category, not a numeric score**: a fabricated percentage would suggest a precision the AI analysis doesn't actually have.
 
 Repository: `RequirementRepository` is the single repository of the bounded context, with two implementations — `SQLiteRequirementRepository` for production and an in-memory fake for tests (see Validation chapter).
