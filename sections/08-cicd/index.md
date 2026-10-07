@@ -57,9 +57,9 @@ Unlike a workflow that publishes to a public package index, BridgeIT's release s
 
 ## Dependency automation
 
-Automated dependency updates are handled by **Renovate** (`.github/renovate.json`), configured to:
+Automated dependency updates are handled by **Renovate** (`renovate.json` at the repository root), configured to:
 
-- check weekly, with a concurrent PR limit of 25 and no hourly limit;
+- create dependency update pull requests according to the Renovate configuration, with a concurrent PR limit of 25 and no hourly limit;
 - open pull requests separately for major, minor, and patch updates (`separateMajorMinor`, `separateMinorPatch`), rather than bundling them;
 - assign opened PRs to the project maintainer (`assignees`), previously misconfigured to the professor's own GitHub username, inherited unnoticed from the course template, and corrected during development;
 - tag GitHub Actions version updates specifically with the `ci` Conventional Commit type (`semanticCommitType`), keeping them distinguishable from dependency updates to the Python/Node packages themselves;
