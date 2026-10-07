@@ -1,9 +1,8 @@
 ---
-
 title: Design
 has_children: false
 nav_order: 4
-------------
+---
 
 # Design
 
@@ -36,8 +35,8 @@ The application layer therefore acts as the coordination point between the domai
 
 * **Domain** — models `Requirement` as the aggregate root of the requirement lifecycle, together with its value objects and invariants. It owns the business rules governing valid state transitions.
 * **Application / Use Cases** — the main business operations are represented by `SubmitRequirementUseCase`, `AnalyseRequirementUseCase`, and `ValidateRequirementUseCase`. These use cases coordinate repositories, the AI gateway, and domain objects, without containing HTTP or SQL-specific code. Requirement retrieval is currently implemented directly in the API layer as a thin repository operation.
-* **Application / Ports** — `RequirementRepository` and `AIGateway` define the abstractions required by the application layer. The application depends on these interfaces rather than on concrete infrastructure technologies. `AIGatewayError` provides an implementation-independent error type for AI-related failures.
-* **Adapters (driving)** — the FastAPI routes in `bridgeit/adapters/api/` translate HTTP requests into application operations and convert domain/application errors into HTTP responses. `ApiError` provides a common structured error representation.
+* **Application / Ports** — `RequirementRepository` and `AIGateway` define the abstractions required by the application layer. The application depends on these interfaces rather than on concrete infrastructure technologies. `AIGatewayError` provides an implementation-independent error type for AI-related failures, while `RequirementNotFoundError` (in `bridgeit/application/errors.py`) is shared by the use cases that look up a requirement.
+* **Adapters (driving)** — the FastAPI routes in `bridgeit/adapters/api/` translate HTTP requests into application operations and convert domain/application errors into HTTP responses. The request/response DTOs, which depend on Pydantic, live in this adapter (`bridgeit/adapters/api/dto.py`) rather than in the application layer. `ApiError` provides a common structured error representation.
 * **Infrastructure (driven)** — `SQLiteRequirementRepository` implements the persistence port using Python's standard-library `sqlite3` module, while `GeminiAIGateway` implements the AI port using Google's `google-genai` client.
 
 ## Infrastructure
@@ -117,11 +116,12 @@ The interaction proceeds as follows:
 1. The FastAPI route receives the request.
 2. The route invokes `AnalyseRequirementUseCase`.
 3. The use case retrieves the requirement through `RequirementRepository`.
-4. The use case sends the current requirement text to `AIGateway`.
-5. The Gemini adapter performs the AI analysis and returns an `AIAnalysis`.
-6. The use case updates the requirement status from `Submitted` or `Clarified` to `Analyzed`.
-7. The updated requirement is persisted through the repository.
-8. The API returns the analysis result, including the quality indication and any identified issues.
+4. The use case asks the `Requirement` aggregate whether an analysis is allowed in its current status (`ensure_can_be_analyzed`); if not, the request is rejected with `409` **before** any call to the AI provider, so no free-tier quota is consumed.
+5. The use case sends the current requirement text to `AIGateway`.
+6. The Gemini adapter performs the AI analysis and returns an `AIAnalysis`.
+7. The use case updates the requirement status from `Submitted` or `Clarified` to `Analyzed`.
+8. The updated requirement is persisted through the repository.
+9. The API returns the analysis result, including the quality indication and any identified issues.
 
 The AI result is therefore returned to the client, while the authoritative requirement state is updated separately through the domain lifecycle.
 
@@ -148,7 +148,7 @@ Only this explicit human validation action can produce the final statuses `Valid
 
 ## Behaviour
 
-`Requirement` is the only stateful domain object and controls its own lifecycle. External layers cannot arbitrarily assign a new status; instead, they must invoke domain operations such as `mark_analyzed`, `clarify`, `validate`, or `reject`.
+`Requirement` is the only stateful domain object and controls its own lifecycle. External layers cannot arbitrarily assign a new status; instead, they must invoke domain operations such as `mark_analyzed`, `clarify`, `validate`, or `reject` (and `ensure_can_be_analyzed` to check, without changing state, whether an analysis is allowed).
 
 When an invalid transition is attempted, the domain raises `InvalidStateTransitionError`. This rule is therefore independent of whether the operation originated from the web interface or from another adapter.
 
@@ -174,7 +174,7 @@ The stored data therefore consists of:
 * the current requirement text;
 * the current lifecycle status.
 
-The application does **not** persist a complete revision history. When a Business Analyst edits a requirement, the existing text is replaced by the revised text while the identifier is preserved.
+The application does **not** persist a complete revision history. When a Requirements Engineer edits a requirement, the existing text is replaced by the revised text while the identifier is preserved.
 
 The result of an AI analysis is also **not persisted**. The `AIAnalysis` object is returned directly by the analysis endpoint and is recomputed when the requirement is analysed again. This keeps the current schema small and avoids introducing a separate persistence model for analysis results.
 
@@ -184,4 +184,4 @@ The persistence adapter is the only component that directly queries the SQLite d
 
 The current implementation contains a small architectural shortcut in the requirement retrieval endpoint: `GET /requirements/{id}` accesses the repository directly instead of using a dedicated retrieval use case. This does not affect the domain rules, but it represents a minor technical-debt item that could be refactored in a future iteration.
 
-Concurrency is delegated to SQLite's own locking mechanism. Given the scope of the project, which assumes a single local instance and one primary Business Analyst at a time, no additional concurrency infrastructure is required.
+Concurrency is delegated to SQLite's own locking mechanism. Given the scope of the project, which assumes a single local instance and one primary Requirements Engineer at a time, no additional concurrency infrastructure is required.

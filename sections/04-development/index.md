@@ -116,21 +116,21 @@ CREATE TABLE requirements (
 
 AI analyses are not currently persisted. An analysis is recalculated when the relevant use case is invoked. This is a deliberate present-state decision and should not be confused with a claim that analysis history is already stored.
 
-Database statements should use parameter binding rather than string interpolation. This reduces the risk of SQL injection and keeps values separate from SQL syntax.
+All database statements use parameter binding rather than string interpolation. This reduces the risk of SQL injection and keeps values separate from SQL syntax.
 
 ### Authentication
 
 Authentication is not implemented in the current version of BridgeIT. The prototype currently assumes a trusted user operating the application in a controlled academic or local environment.
 
-Consequently, BridgeIT does not currently use OAuth, JWT, session cookies, or another identity protocol. The term *Business Analyst* identifies the intended user role in the requirements workflow, but it does not yet correspond to an authenticated account.
+Consequently, BridgeIT does not currently use OAuth, JWT, session cookies, or another identity protocol. The term *Requirements Engineer* identifies the intended user role in the requirements workflow, but it does not yet correspond to an authenticated account.
 
-If user management is implemented in a later milestone, the authentication mechanism and credential-storage strategy must be documented and tested before the report claims that users are authenticated.
+Introducing user management would require choosing an authentication mechanism and a credential-storage strategy, together with dedicated tests; this is discussed in [Future work](../12-future/).
 
 ### Authorization
 
-Authorization is likewise not implemented in the current version. There are no enforced RBAC or ABAC policies, and the current API does not distinguish permissions among Business Stakeholders, Business Analysts, or Software Engineers.
+Authorization is likewise not implemented in the current version. There are no enforced RBAC or ABAC policies, and the current API does not distinguish permissions among Business Stakeholders, Requirements Engineers, or Software Engineers.
 
-This limitation is explicit: the current domain focuses on the Requirement lifecycle, AI-assisted analysis, human validation, and traceability. Any future authorization model should be introduced only together with concrete functional requirements and acceptance tests.
+This limitation is explicit: the current domain focuses on the Requirement lifecycle, AI-assisted analysis, and human validation. Any future authorization model should be introduced only together with concrete functional requirements and acceptance tests.
 
 ### AI-provider interaction and failure handling
 
@@ -161,7 +161,7 @@ The frontend intentionally uses vanilla HTML, CSS, and JavaScript. A framework w
 - **`google-genai`** provides the client used by the Gemini adapter.
 - **Python abstract interfaces** define the `RequirementRepository` and `AIGateway` ports, keeping use cases independent from concrete adapters.
 
-FastAPI is used at the driving-adapter boundary, while Pydantic is used for API-facing DTOs in the application package. Neither is imported into domain entities or value objects.
+FastAPI is used at the driving-adapter boundary, and Pydantic is used for the API-facing DTOs, which also live in the driving adapter (`bridgeit/adapters/api/`). Neither is imported into the domain or the application layer.
 
 ### Testing and static verification
 
@@ -174,7 +174,7 @@ FastAPI is used at the driving-adapter boundary, while Pydantic is used for API-
 - **Poetry** manages Python dependencies and the project environment.
 - **Poe the Poet** exposes repeatable project commands on top of Poetry.
 
-The current test suite contains 58 automated tests. The definitive test distribution, success rate, and coverage results belong in the [Validation](../05-validation/) section and must be updated from actual CI output before final submission.
+The current test suite contains 61 automated tests; their distribution, success rate, and coverage are reported in the [Validation](../05-validation/) section.
 
 ### Frontend
 
@@ -207,13 +207,11 @@ The project is intended to use a free GenAI tier. Provider quotas and rate limit
 
 ## Current implementation boundary
 
-The choices described above reflect the implementation currently known at the time of writing. In particular:
+The choices described above reflect the implementation of the submitted release. In particular:
 
 - SQLite persistence for Requirements is implemented through a repository adapter;
 - the AI Gateway, analysis use case, validation use case, and corresponding FastAPI endpoints have been developed;
 - the six-page vanilla frontend has been developed;
 - authentication and authorization are not implemented;
 - AI Analysis persistence and caching are not currently claimed.
-
-This section must be revised if later milestones introduce user accounts, authorization rules, a different database schema, analysis persistence, caching, or additional deployment technologies.
 

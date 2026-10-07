@@ -50,15 +50,17 @@ Since only one artefact is generated from the codebase, there is a single, unamb
 
 ### Creating a New Release
 
-As stated earlier, the CI/CD workflow is in charge of: updating the application version and the changelog, releasing the new version and creating the tag of the new version. An update of the application is released everytime a commit is pushed or a branch is merged to the branch `master` and the changes committed are so that an upgrade of the version is necessary. The last condition is also automated by the application of the Conventional Commit specification, as described in [Development](../04-development/) section; in this way, the level of the version change depends on the type of the commit. The version is upgraded accordingly to the highest level of change brought by the commits pushed:
+As stated earlier, the CI/CD workflow is in charge of: updating the application version and the changelog, releasing the new version and creating the tag of the new version. An update of the application is released every time a commit is pushed or a branch is merged to the branch `master` and the changes committed are so that an upgrade of the version is necessary. The last condition is also automated by the application of the Conventional Commit specification, as described in [Development](../04-development/) section; in this way, the level of the version change depends on the type of the commit. The version is upgraded according to the highest level of change brought by the commits pushed:
 
 - a `fix` commit leads to a `PATCH` level update;
 - a `feat` commit leads to a `MINOR` level update;
-- a `BREAKING CHANGE` commit leads to a `MAJOR` level update.
+- a `BREAKING CHANGE` commit leads to a `MAJOR` level update;
+- with the preconfigured rules inherited from the course template (`semantic-release-preconfigured-conventional-commits`), `docs` and `chore` commits also lead to a `PATCH` level update, as releases `1.0.3` (documentation only) and `1.0.4` (documentation and maintenance) show.
 
-Any other type of commit will not update the version at any level.
+Commits that touch only files excluded by the workflow's `paths-ignore` filter (e.g. `README.md`, `CHANGELOG.md`) do not trigger the pipeline and therefore never produce a release on their own.
 
 This automation, powered by `semantic-release`, was not functional for the first part of the project: a misconfigured GitHub token caused the release job to fail on every merge to `master`, silently, for several weeks before being diagnosed and fixed. The pipeline has been fully operational, including automatic release creation, since that fix.
+
 ### Release history and next version calculation
 
 The repository history contains the following published releases:
@@ -70,5 +72,6 @@ The repository history contains the following published releases:
 | `bridgeit-v1.0.2` | Patch | Frontend requirement feedback and consistency improvements |
 | `bridgeit-v1.0.3` | Patch | Final artifact README scope and report-link updates |
 | `bridgeit-v1.0.4` | Patch | Documentation and repository maintenance updates |
+| `bridgeit-v1.0.5` | Patch | Review fixes: validate 404, Docker Compose, Edit flow, AI call order |
 
-The release history demonstrates that the team used Semantic Versioning to compute subsequent versions rather than keeping a single manually assigned release number. Starting from `1.0.4`, a backward-compatible bug fix (`fix:`) would produce `1.0.5`; a new backward-compatible feature (`feat:`) would produce `1.1.0`; and a breaking change would produce `2.0.0`. The exact final version used for submission must be the same version referenced by the final artifact metadata, changelog, README, and GitHub release/tag.
+The release history demonstrates that the team used Semantic Versioning to compute subsequent versions rather than keeping a single manually assigned release number. Starting from `1.0.5`, a backward-compatible bug fix (`fix:`) would produce `1.0.6`; a new backward-compatible feature (`feat:`) would produce `1.1.0`; and a breaking change would produce `2.0.0`. To avoid manually maintained version numbers drifting out of date, the artifact's README and documentation do not hard-code the version: they refer to `CHANGELOG.md` and the GitHub Releases page, while `pyproject.toml` is updated automatically by semantic-release.

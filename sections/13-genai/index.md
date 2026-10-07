@@ -11,7 +11,7 @@ This section documents how generative AI was used while building BridgeIT, and t
 Two different uses of AI must not be confused:
 
 - **Gemini is a feature of the product.** BridgeIT calls the Gemini API, through the `AIGateway` port, to assist the analysis of requirements. This is documented in the [Design](../03-design/) and [Development](../04-development/) chapters and is not covered here.
-- **Claude and ChatGPT are tools we used to build the product.** This section is about them. Generative AI was also used during project planning and intermediate review, with the resulting material checked against the actual project documentation before being retained.
+- **Claude and ChatGPT are tools we used to build the product.** This section is about them.
 
 ## Our stance: collaborators, not substitutes
 
