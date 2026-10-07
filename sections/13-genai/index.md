@@ -11,7 +11,7 @@ This section documents how generative AI was used while building BridgeIT, and t
 Two different uses of AI must not be confused:
 
 - **Gemini is a feature of the product.** BridgeIT calls the Gemini API, through the `AIGateway` port, to assist the analysis of requirements. This is documented in the [Design](../03-design/) and [Development](../04-development/) chapters and is not covered here.
-- **Claude and ChatGPT are tools we used to build the product.** This section is about them. Gemini was also used once as a drafting aid, to produce an initial version of the project roadmap, which an author then reviewed and corrected against the project documentation before adopting it.
+- **Claude and ChatGPT are tools we used to build the product.** This section is about them. Generative AI was also used during project planning and intermediate review, with the resulting material checked against the actual project documentation before being retained.
 
 ## Our stance: collaborators, not substitutes
 
@@ -30,6 +30,6 @@ Generative AI was also used to support project planning, to review intermediate 
 
 - **The human decides.** The AI proposes, we choose. This applies to design choices, code changes, and the text of the report alike.
 - **Understand before applying.** We did not apply a suggestion that we could not explain ourselves.
-- **No special treatment for AI-assisted work.** Anything produced with AI help goes through exactly the same automated checks as the rest of the project: Mypy type checking, Ruff linting and format checking, and the pytest suite, all run by the [CI/CD pipeline](../08-cicd/) on every push and pull request.
+- **No special treatment for AI-assisted work.** Anything produced with AI help goes through exactly the same automated checks as the rest of the project: Mypy type checking, Ruff linting and format checking, and the pytest suite, all run by the [CI/CD pipeline](../08-cicd/) on applicable code-changing pushes and pull requests.
 - **Clear and explicit requests.** We described the task, the context, and the constraints in our requests, instead of relying on prompt tricks.
 - **Responsibility stays with the authors.** The AI is not an author: the final content of the report and of the artifact is our own.
