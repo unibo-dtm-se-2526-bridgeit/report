@@ -16,14 +16,14 @@ This guide describes the web interface and the workflow available to an end user
 
 The BridgeIT frontend contains six main pages:
 
-| Page             | Purpose                                                                 |
-| ---------------- | ----------------------------------------------------------------------- |
-| **Health**       | Verify that the frontend can communicate with the backend               |
-| **Create**       | Submit a new requirement                                                |
-| **Requirements** | Retrieve and inspect an existing requirement                            |
-| **Analyse**      | Request an AI-assisted quality analysis                                 |
-| **Validate**     | Record the Business Analyst's decision                                  |
-| **Guide**        | Read an in-application explanation of the workflow and common questions |
+| Page | Purpose |
+|---|---|
+| **Health** | Verify that the frontend can communicate with the backend |
+| **Create** | Submit a new requirement |
+| **Requirements** | Retrieve and inspect an existing requirement |
+| **Analyse** | Request an AI-assisted quality analysis |
+| **Validate** | Record the Business Analyst's decision |
+| **Guide** | Read an in-application explanation of the workflow and common questions |
 
 The same navigation bar is available throughout the application.
 
@@ -39,13 +39,13 @@ A requirement normally progresses through the following lifecycle:
 
 The Business Analyst can then choose one of three outcomes:
 
-* `Approve` → `Validated`;
-* `Edit` → `Clarified`;
-* `Reject` → `Rejected`.
+- `Approve` → `Validated`;
+- `Edit` → `Clarified`;
+- `Reject` → `Rejected`.
 
 The AI analysis itself never produces one of these authoritative final states.
 
-If the Business Analyst chooses `Edit`, the requirement moves to `Clarified` and its text is replaced with the revised version. A requirement in `Clarified` state can then be analysed again. After re-analysis, it returns to `Analyzed` and requires a new Business Analyst decision.
+If the Business Analyst chooses `Edit`, the requirement moves to `Clarified` and its text is replaced with the revised version. A `Clarified` requirement can then be analysed again. After re-analysis, it returns to `Analyzed` and requires a new Business Analyst decision.
 
 The `Edit` → `Clarified` → `Analyse` refinement cycle can therefore be repeated before a final validation decision is recorded.
 
@@ -105,11 +105,11 @@ This page is useful throughout the workflow to verify the authoritative state st
 
 Typical statuses include:
 
-* `Submitted`;
-* `Analyzed`;
-* `Clarified`;
-* `Validated`;
-* `Rejected`.
+- `Submitted`;
+- `Analyzed`;
+- `Clarified`;
+- `Validated`;
+- `Rejected`.
 
 For example, after an AI analysis but before any human validation decision, the requirement remains `Analyzed`.
 
@@ -127,18 +127,16 @@ Gemini evaluates the requirement and returns a quality indication together with 
 
 The analysis can produce one of two outcomes:
 
-* `ready_for_validation`;
-* `needs_clarification`.
-
-When the requirement is ready for validation, the interface informs the user that Gemini did not identify any blocking issue and that the requirement can be reviewed by a Business Analyst.
+- `ready_for_validation`;
+- `needs_clarification`.
 
 When clarification is needed, the interface displays the issues identified by Gemini and explains why they matter.
 
 For example, an ambiguous requirement may contain problems such as:
 
-* an unspecified actor or recipient;
-* subjective expressions such as "quickly";
-* an undefined triggering condition.
+- an unspecified actor or recipient;
+- subjective expressions such as "quickly";
+- an undefined triggering condition.
 
 After a successful AI analysis, the authoritative requirement status becomes:
 
@@ -156,9 +154,9 @@ The page displays **Record a validation decision**.
 
 Enter the requirement id and choose one of the three available decisions:
 
-* **Approve**
-* **Edit**
-* **Reject**
+- **Approve**
+- **Edit**
+- **Reject**
 
 ### Approve
 
@@ -184,8 +182,8 @@ For example:
 
 After the decision is recorded:
 
-* the revised text replaces the previous requirement text;
-* the requirement status becomes `Clarified`.
+- the revised text replaces the previous requirement text;
+- the requirement status becomes `Clarified`.
 
 Example lifecycle:
 
@@ -205,8 +203,6 @@ Example lifecycle:
 
 `Submitted` → `Analyzed` → `Rejected`
 
-Validated and Rejected requirements are final and cannot be analysed again.
-
 ## 6. Verify the current state
 
 After recording a validation decision, return to **Requirements**.
@@ -215,16 +211,16 @@ Enter the same requirement id and select **Look up**.
 
 Verify that:
 
-* the displayed text is the expected authoritative text;
-* the status reflects the Business Analyst's decision.
+- the displayed text is the expected authoritative text;
+- the status reflects the Business Analyst's decision.
 
 For example:
 
 | Decision | Expected state |
-| -------- | -------------- |
-| Approve  | `Validated`    |
-| Edit     | `Clarified`    |
-| Reject   | `Rejected`     |
+|---|---|
+| Approve | `Validated` |
+| Edit | `Clarified` |
+| Reject | `Rejected` |
 
 For an edited requirement, the **Requirements** page displays the revised text.
 
@@ -234,14 +230,14 @@ For a `Clarified` requirement, the same id can be reused to start another analys
 
 Open **Guide** for a shorter explanation of BridgeIT directly inside the application.
 
-The page presents the main workflow as four steps:
+The page explains the main workflow:
 
 1. write a requirement;
 2. request a Gemini quality check;
 3. let a Business Analyst review the result;
 4. check the requirement again whenever needed.
 
-The Guide also contains frequently asked questions about requirement ids, Gemini clarification results, human validation, edited requirements, and the technical knowledge required to use the application.
+The Guide also contains frequently asked questions about requirement ids, Gemini clarification results, human validation, and edited requirements.
 
 ## Human-in-the-loop principle
 
@@ -249,17 +245,17 @@ The most important rule for using BridgeIT is that the AI is advisory.
 
 Gemini can:
 
-* analyse requirement quality;
-* identify ambiguity or missing information;
-* explain why an issue matters;
-* indicate whether a requirement appears ready for human validation.
+- analyse requirement quality;
+- identify ambiguity or missing information;
+- explain why an issue matters;
+- indicate whether a requirement appears ready for human validation.
 
 Gemini cannot:
 
-* approve a requirement;
-* reject a requirement;
-* edit the authoritative requirement text by itself;
-* determine the final authoritative requirement status.
+- approve a requirement;
+- reject a requirement;
+- edit the authoritative requirement text by itself;
+- determine the final authoritative requirement status.
 
 Only an explicit Business Analyst action on the **Validate** page can result in `Validated`, `Clarified`, or `Rejected`.
 
@@ -267,14 +263,13 @@ This separation ensures that AI supports the requirements engineering process wi
 
 ## Quick reference
 
-| Task                                               | Page             |
-| -------------------------------------------------- | ---------------- |
-| Check whether BridgeIT is connected to the backend | **Health**       |
-| Submit a new requirement                           | **Create**       |
-| Retrieve requirement text and status               | **Requirements** |
-| Request Gemini quality feedback                    | **Analyse**      |
-| Approve, edit, or reject a requirement             | **Validate**     |
-| Read workflow help and FAQs                        | **Guide**        |
+| Task | Page |
+|---|---|
+| Check whether BridgeIT is connected to the backend | **Health** |
+| Submit a new requirement | **Create** |
+| Retrieve requirement text and status | **Requirements** |
+| Request Gemini quality feedback | **Analyse** |
+| Approve, edit, or reject a requirement | **Validate** |
+| Read workflow help and FAQs | **Guide** |
 
 For installation, runtime configuration, and deployment instructions, refer to the [Deployment](../07-deployment/) and [Developer Guide](../10-devguide/) sections.
-
