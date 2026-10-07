@@ -12,7 +12,7 @@ nav_order: 3
 - As a Requirements Engineer, I want the platform to analyze a requirement for ambiguity or incompleteness, so that I can identify issues before the requirement is validated.
 - As a Business Stakeholder or Requirements Engineer, I want to revise a requirement's wording after an analysis has surfaced an issue, so that the requirement can be improved before validation.
 - As a Requirements Engineer, I want to see a quality indication for a requirement, so that I can decide whether it needs further clarification.
-- As a Business Stakeholder or Requirements Engineer, I want to explicitly approve, edit, or reject any AI-generated suggestion, so that no interpretation of my requirement becomes authoritative without my consent.
+- As a Business Stakeholder or Requirements Engineer, I want to explicitly approve, edit, or reject a requirement after reviewing the AI analysis, so that no interpretation of my requirement becomes authoritative without my consent.
 - As a Software Engineer, I want to inspect which artifacts are linked to a given requirement, so that I understand the origin of what I am implementing.
 - As a Software Engineer, I want to create a derived artifact from a validated requirement, so that I can begin implementation work with a clear, traceable link back to its source.
 
@@ -26,7 +26,7 @@ nav_order: 3
 - F2: the system must use the AI Gateway to analyze a submitted requirement's text and identify potential quality issues (ambiguity, incompleteness)
 - F3: the user must be able to revise a requirement's wording after an analysis has surfaced an issue, keeping the same identifier across the revision
 - F4: the system must produce a quality indication for a requirement, distinguishing at least "ready for validation" from "needs clarification"
-- F5: the user must explicitly approve, edit, or reject any AI-generated suggestion before it can affect the requirement's authoritative state
+- F5: the user must explicitly approve, edit, or reject the requirement after reviewing the AI analysis, before the human decision can affect the requirement's authoritative state
 - F6: the user must be able to create and inspect traceability links between a requirement and the artifacts derived from it 
 - F7: the user must be able to create a derived, structured artifact from a validated requirement, preserving its link to the source requirement 
 
@@ -70,6 +70,6 @@ All other technical choices (`sqlite3` over an ORM, vanilla HTML/CSS/JavaScript 
 - F5: an AI analysis awaiting review does not itself produce a final requirement state; after a human decision is recorded, the resulting state is retrievable together with the requirement
 - F6: a traceability link between a requirement and a derived artifact is retrievable by querying either side of the relationship
 - F7: an artifact created from a requirement whose status is "Validated" retains an explicit reference to it; creation is refused for a requirement not yet Validated
-- NF1-NF9: verified through automated tests at the domain, application, infrastructure, and API layers (see Validation section) and through manual inspection of the codebase's module boundaries; NF10 is currently not implemented and is treated as future work
+- NF1-NF9: assessed through automated tests where applicable at the domain, application, infrastructure, and API layers (see Validation section), together with manual inspection of module boundaries and configuration; NF10 is currently not implemented and is treated as future work
 - I1: the persistence adapter connects to and correctly reads/writes a SQLite database file, verified by integration tests
 - I2: the frontend is reachable through a standard web browser and successfully completes the full requirement lifecycle against the running API
