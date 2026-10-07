@@ -1,0 +1,59 @@
+@startuml
+skinparam componentStyle rectangle
+skinparam packageStyle rectangle
+
+package "Domain" {
+  [Requirement] as Req
+  [RequirementText] as ReqText
+  [RequirementStatus] as ReqStatus
+  [AIAnalysis] as Analysis
+  [QualityScore] as Quality
+}
+
+package "Application" {
+  [SubmitRequirementUseCase] as SubmitUC
+  [AnalyseRequirementUseCase] as AnalyseUC
+  [ValidateRequirementUseCase] as ValidateUC
+  interface "RequirementRepository" as Repo
+  interface "AIGateway" as Gateway
+}
+
+package "Adapters" {
+  [FastAPI API] as API
+  [ApiError] as ApiError
+}
+
+package "Infrastructure" {
+  [SQLiteRequirementRepository] as SQLite
+  [GeminiAIGateway] as Gemini
+}
+
+[Browser Frontend] as Frontend
+[Google Gemini API] as GeminiAPI
+[(SQLite DB)] as DB
+
+Frontend --> API : HTTP / JSON
+API --> SubmitUC
+API --> AnalyseUC
+API --> ValidateUC
+API --> ApiError
+SubmitUC --> Repo
+AnalyseUC --> Repo
+AnalyseUC --> Gateway
+ValidateUC --> Repo
+SubmitUC --> Req
+AnalyseUC --> Req
+ValidateUC --> Req
+Req --> ReqText
+Req --> ReqStatus
+Analysis --> Quality
+SQLite ..|> Repo
+Gemini ..|> Gateway
+SQLite --> DB
+Gemini --> GeminiAPI : HTTPS
+
+note bottom of Req
+Core domain logic is independent
+from FastAPI, SQLite and Gemini.
+end note
+@enduml

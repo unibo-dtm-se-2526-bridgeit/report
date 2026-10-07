@@ -1,0 +1,38 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Business Stakeholder" as BS
+actor "Requirements Engineer" as RE
+actor "Software Engineer" as SE
+
+rectangle BridgeIT {
+  usecase "Submit Requirement\n(FR-01)" as UC1
+  usecase "Analyse Requirement\n(FR-02)" as UC2
+  usecase "View Quality Indication\n(FR-04)" as UC3
+  usecase "Validate Requirement\n(FR-05)" as UC4
+  usecase "Approve" as UCA
+  usecase "Edit / Clarify" as UCE
+  usecase "Reject" as UCR
+}
+
+BS --> UC1
+RE --> UC1
+BS --> UC2
+RE --> UC2
+BS --> UC4
+RE --> UC4
+
+UC2 ..> UC3 : includes
+UC4 ..> UCA : includes
+UC4 ..> UCE : includes
+UC4 ..> UCR : includes
+
+note right of UC4
+FR-06 Traceability Link Management
+and FR-07 Derived Artifact Creation
+are future extensions and are not
+part of the current implemented
+use-case diagram.
+end note
+@enduml

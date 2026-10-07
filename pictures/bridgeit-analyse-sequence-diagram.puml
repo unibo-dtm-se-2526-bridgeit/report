@@ -1,0 +1,30 @@
+@startuml
+actor User
+participant "Analyse page" as Frontend
+participant "FastAPI route" as API
+participant "AnalyseRequirementUseCase" as UC
+participant "RequirementRepository" as Repo
+participant "AIGateway" as Gateway
+participant "Gemini" as Gemini
+
+User -> Frontend : Request analysis
+Frontend -> API : POST /requirements/{id}/analyse
+API -> UC : execute(id)
+UC -> Repo : get_by_id(id)
+Repo --> UC : Requirement
+UC -> Gateway : analyse(text)
+Gateway -> Gemini : analysis request
+Gemini --> Gateway : quality + issues
+Gateway --> UC : AIAnalysis
+UC -> Requirement : mark_analyzed()
+UC -> Repo : save(Requirement)
+Repo --> UC : success
+UC --> API : AIAnalysis + status
+API --> Frontend : JSON response
+Frontend --> User : Show analysis result
+
+note over UC,Repo
+AI analysis changes the lifecycle to Analyzed,
+but does not make a human validation decision.
+end note
+@enduml
