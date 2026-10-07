@@ -23,6 +23,9 @@ In practice:
 - Every change suggested by the AI was **reviewed, applied, or discarded by us**. Nothing was accepted just because it came from an AI.
 - Every commit was **reviewed and made by the authors**, who take full responsibility for the content of the final report and artifact.
 
+
+Generative AI was also used to support project planning, to review intermediate work, and to identify possible inconsistencies between the implementation and the documentation. These uses followed the same human-review principle described above.
+
 ## Criteria we followed
 
 - **The human decides.** The AI proposes, we choose. This applies to design choices, code changes, and the text of the report alike.
