@@ -35,13 +35,13 @@ git clone https://github.com/unibo-dtm-se-2526-bridgeit/BridgeIT-artifact.git
 cd BridgeIT-artifact
 ```
 
-2. Install Poetry if you don't have it yet:
+2. Install Poetry if you don't have it yet. The repository provides the required Poetry version through `requirements.txt`:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Install the project's dependencies (creates `.venv/` inside the project):
+3. Install the project's dependencies. Poetry creates the project-local `.venv/` according to the repository configuration:
 
 ```bash
 poetry install
@@ -61,11 +61,9 @@ Either way, one environment variable must be set before requesting an AI-assiste
 
 ## Virtual environment
 
-All project commands run inside the `.venv/` virtual environment created by Poetry. Activate it once per terminal session, then use tools directly without any prefix:
+All project commands run inside the `.venv/` virtual environment created by Poetry. After `poetry install`, activate it once per terminal session if you want to invoke commands directly:
 
 ```bash
-python3 -m venv .venv
-
 # macOS / Linux
 source .venv/bin/activate
 
