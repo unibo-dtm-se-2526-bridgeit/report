@@ -16,7 +16,7 @@ Files and modules are written in `snake_case` (e.g. `sqlite_requirement_reposito
 
 ### Code Style
 
-Style and typing are enforced by **Ruff** (linting and formatting) and a strict **Mypy** configuration, applied equally to both production code and the test suite (`mypy bridgeit tests`), untyped definitions are not relaxed for `tests.*`, unlike some other conventions.
+Style and typing are enforced by **Ruff** (linting and formatting) and **Mypy** static type checking, applied equally to both production code and the test suite (`mypy bridgeit tests`), untyped definitions are not relaxed for `tests.*`, unlike some other conventions.
 
 Unlike some other course projects, BridgeIT does **not** currently have pre-commit or commit-msg hooks installed (no `commitlint`, no `pre-commit` / `husky` setup): Conventional Commits discipline is followed manually by the team and only checked downstream, by `semantic-release`, when a commit reaches `master`, not blocked locally at commit time. This is a known gap, listed as a possible future improvement rather than solved, since introducing it would require additional npm tooling not otherwise needed for local development (see [Future work](../12-future/)).
 
