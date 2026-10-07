@@ -31,13 +31,13 @@ Coverage is measured with `poetry run poe coverage`, which runs `pytest` with `c
 
 ### Unit Testing
 
-The suite contains **58 automated tests**, organized to mirror the production package tree.
+The suite contains **61 automated tests**, organized to mirror the production package tree.
 
 **Domain Layer**
 
 | Module | Tests | What it covers | Requirements |
 |---|---|---|---|
-| `test_requirement.py` | 13 | `Requirement` creation, lifecycle transitions (`submit`, `mark_analyzed`, `clarify`, `validate`, `reject`), invalid transitions, value-object equality (`RequirementText`, `RequirementStatus`) | FR-01, FR-03, FR-05 |
+| `test_requirement.py` | 14 | `Requirement` creation, lifecycle transitions (`submit`, `mark_analyzed`, `clarify`, `validate`, `reject`), invalid transitions, the `ensure_can_be_analyzed` guard, value-object equality (`RequirementText`, `RequirementStatus`) | FR-01, FR-03, FR-05 |
 | `test_ai_analysis.py` | 4 | `AIAnalysis` and `QualityScore` value objects | FR-02, FR-04 |
 
 **Application Layer**
@@ -45,7 +45,7 @@ The suite contains **58 automated tests**, organized to mirror the production pa
 | Module | Tests | What it covers | Requirements |
 |---|---|---|---|
 | `test_in_memory_requirement_repository.py` | 5 | Conformance of the fake repository to the `RequirementRepository` port's contract | NF-02 |
-| `test_analyse_requirement.py` | 3 | `AnalyseRequirementUseCase`'s orchestration of the repository and the AI Gateway | FR-02 |
+| `test_analyse_requirement.py` | 4 | `AnalyseRequirementUseCase`'s orchestration of the repository and the AI Gateway, including the guarantee that the AI Gateway is never called for a requirement that cannot be analysed | FR-02, NF-08 |
 | `test_validate_requirement.py` | 7 | `ValidateRequirementUseCase`: approve/edit/reject decisions, the invariant that no analysis changes a requirement's state without a recorded human decision, invalid-state handling | FR-05 |
 
 **Infrastructure Layer**
@@ -60,20 +60,20 @@ The suite contains **58 automated tests**, organized to mirror the production pa
 | Module | Tests | What it covers | Requirements |
 |---|---|---|---|
 | `test_requirements_routes.py` | 3 | `POST /requirements`, `GET /requirements/{id}`, the structured 404 error format | FR-01 |
-| `test_analysis_router.py` | 5 | `POST /requirements/{id}/analyse` and `POST /requirements/{id}/validate`, with a mocked AI Gateway injected directly | FR-02, FR-05 |
+| `test_analysis_router.py` | 6 | `POST /requirements/{id}/analyse` and `POST /requirements/{id}/validate` (including the structured `404` for an unknown id on both endpoints), with a mocked AI Gateway injected directly | FR-02, FR-05 |
 | `test_main_imports_without_key.py` | 1 | The application module imports and starts successfully even when `GEMINI_API_KEY` is not set — the key is only required when an analysis is actually requested, not at startup | NF-07 |
 
 ### Results
 
 | Metric | Value |
 |---|---|
-| Total unit + integration tests | 58 |
-| Passing | 58 |
+| Total unit + integration tests | 61 |
+| Passing | 61 |
 | Failing | 0 |
 | Success rate | 100% |
-| Statement coverage (production code) | 95% |
+| Statement coverage (production code) | 96% |
 
-The recorded validation run documented in this report produced 58 passing tests with no failures and 95% statement coverage of production code. The HTML coverage report is uploaded as a CI build artifact, so the exact result can be inspected for the corresponding run. Before final submission, the same values should be re-confirmed against the latest successful CI run.
+The recorded validation run produced 61 passing tests with no failures and 96% statement coverage of production code. The HTML coverage report is uploaded as a CI build artifact, so the exact result can be inspected for the corresponding run.
 
 ## Integration testing
 
@@ -90,7 +90,7 @@ BridgeIT does not have a fully automated, end-to-end test suite exercising the c
 What **is** verified automatically at system level, through the CI/CD workflow (`.github/workflows/check.yml`):
 
 - the whole test suite runs across **3 operating systems** (Ubuntu, Windows, macOS) and **4 Python versions** (3.10, 3.11, 3.12, 3.13) — 12 runs in total, providing automated evidence that the codebase is not accidentally tied to one specific environment;
-- the package is built with Poetry (`poetry build`) as part of every release, verifying the build itself succeeds, though, unlike some other course projects, it is not subsequently published to or reinstalled from PyPI, since BridgeIT is not intended for public package distribution (see [Release](../06-release/)).
+- the package is built with Poetry (`poetry build`) as part of every release, verifying the build itself succeeds; it is not subsequently published to or reinstalled from PyPI, since BridgeIT is not intended for public package distribution (see [Release](../06-release/)).
 
 The **Docker Compose** setup was used, separately, to manually verify the backend runs correctly in a clean environment with no locally pre-configured Poetry/Python setup, the same purpose a clean-runner PyPI round-trip would serve for a publicly distributed package.
 
@@ -124,7 +124,7 @@ The session focused on the core human-in-the-loop workflow and exercised all thr
 |---|---|---|---|---|---|
 | TC-E2E-01 | Ambiguous requirement requiring clarification | `Analyzed` | `Edit` | `Clarified` | **PASS** |
 | TC-E2E-02 | Clear requirement ready for approval | `Analyzed` | `Approve` | `Validated` | **PASS** |
-| TC-E2E-03 | Problematic requirement rejected by the analyst | `Analyzed` | `Reject` | `Rejected` | **PASS** |
+| TC-E2E-03 | Problematic requirement rejected by the human reviewer | `Analyzed` | `Reject` | `Rejected` | **PASS** |
 
 ### Additional acceptance checks
 
@@ -153,7 +153,7 @@ The analysis identified three concrete quality problems:
 
 After AI analysis, the requirement status was `Analyzed`. The AI did not make an authoritative validation decision.
 
-The Business Analyst selected `Edit` and replaced the text with:
+The Requirements Engineer selected `Edit` and replaced the text with:
 
 > The system shall notify registered administrators within 5 seconds when a critical system failure is detected.
 
@@ -173,9 +173,9 @@ A subsequent lookup returned the edited text together with the `Clarified` state
 
 The requirement was created and analysed successfully.
 
-Gemini reported no blocking quality issues and indicated that the requirement was ready for Business Analyst review. Despite the positive AI assessment, the requirement remained `Analyzed` until an explicit human decision was recorded.
+Gemini reported no blocking quality issues and indicated that the requirement was ready for Requirements Engineer review. Despite the positive AI assessment, the requirement remained `Analyzed` until an explicit human decision was recorded.
 
-The Business Analyst selected `Approve`.
+The Requirements Engineer selected `Approve`.
 
 The resulting status was `Validated`.
 
@@ -201,7 +201,7 @@ The AI identified several issues, including:
 
 After AI analysis, the requirement status was `Analyzed`.
 
-The Business Analyst explicitly selected `Reject`.
+The Requirements Engineer explicitly selected `Reject`.
 
 The resulting status was `Rejected`.
 
@@ -213,7 +213,7 @@ A subsequent lookup returned the original requirement text and the `Rejected` st
 
 ### TC-E2E-04 — Re-analysis after clarification
 
-TC-E2E-01 left the requirement in the `Clarified` state after the Business Analyst edited its text.
+TC-E2E-01 left the requirement in the `Clarified` state after the Requirements Engineer edited its text.
 
 The clarified requirement was submitted for AI-assisted analysis again.
 
@@ -221,9 +221,9 @@ The re-analysis completed successfully and moved the requirement from:
 
 `Clarified` → `Analyzed`
 
-The requirement therefore returned to a state requiring an explicit Business Analyst decision rather than being autonomously finalized by the AI.
+The requirement therefore returned to a state requiring an explicit Requirements Engineer decision rather than being autonomously finalized by the AI.
 
-The Business Analyst then selected `Approve`, producing:
+The Requirements Engineer then selected `Approve`, producing:
 
 `Analyzed` → `Validated`
 
@@ -259,7 +259,7 @@ A separate requirement was used to verify repeated clarification and re-analysis
 
 > The system should notify users quickly about important events.
 
-The requirement was created and analysed. The Business Analyst then edited it, producing the `Clarified` state.
+The requirement was created and analysed. The Requirements Engineer then edited it, producing the `Clarified` state.
 
 The clarified requirement was analysed again, returning it to `Analyzed`.
 
@@ -306,4 +306,4 @@ The extended checks additionally verified that:
 - attempting to analyse a `Validated` requirement is rejected with HTTP `409`;
 - the in-application **Guide** is available through the running frontend.
 
-The tests provide direct evidence of BridgeIT's central human-in-the-loop invariant: **Gemini assists the requirements engineering process, but it does not autonomously determine the authoritative final state of a requirement. That decision remains under Business Analyst control.**
+The tests provide direct evidence of BridgeIT's central human-in-the-loop invariant: **Gemini assists the requirements engineering process, but it does not autonomously determine the authoritative final state of a requirement. That decision remains under Requirements Engineer control.**

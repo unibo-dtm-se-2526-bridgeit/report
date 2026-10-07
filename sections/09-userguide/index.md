@@ -8,7 +8,7 @@ nav_order: 10
 
 BridgeIT is a requirements engineering application designed to support the refinement of software requirements through AI-assisted quality analysis and explicit human validation.
 
-The application follows a human-in-the-loop approach: Gemini can analyse a requirement and highlight potential quality issues, but it cannot approve, modify, or reject a requirement autonomously. The authoritative decision always remains with the Business Analyst.
+The application follows a human-in-the-loop approach: Gemini can analyse a requirement and highlight potential quality issues, but it cannot approve, modify, or reject a requirement autonomously. The authoritative decision always remains with the Requirements Engineer.
 
 This guide describes the web interface and the workflow available to an end user.
 
@@ -22,7 +22,7 @@ The BridgeIT frontend contains six main pages:
 | **Create** | Submit a new requirement |
 | **Requirements** | Retrieve and inspect an existing requirement |
 | **Analyse** | Request an AI-assisted quality analysis |
-| **Validate** | Record the Business Analyst's decision |
+| **Validate** | Record the Requirements Engineer's decision |
 | **Guide** | Read an in-application explanation of the workflow and common questions |
 
 The same navigation bar is available throughout the application.
@@ -37,7 +37,7 @@ A requirement normally progresses through the following lifecycle:
 
 `Submitted` → `Analyzed` → human decision
 
-The Business Analyst can then choose one of three outcomes:
+The Requirements Engineer can then choose one of three outcomes:
 
 - `Approve` → `Validated`;
 - `Edit` → `Clarified`;
@@ -45,7 +45,7 @@ The Business Analyst can then choose one of three outcomes:
 
 The AI analysis itself never produces one of these authoritative final states.
 
-If the Business Analyst chooses `Edit`, the requirement moves to `Clarified` and its text is replaced with the revised version. A `Clarified` requirement can then be analysed again. After re-analysis, it returns to `Analyzed` and requires a new Business Analyst decision.
+If the Requirements Engineer chooses `Edit`, the requirement moves to `Clarified` and its text is replaced with the revised version. A `Clarified` requirement can then be analysed again. After re-analysis, it returns to `Analyzed` and requires a new Requirements Engineer decision.
 
 The `Edit` → `Clarified` → `Analyse` refinement cycle can therefore be repeated before a final validation decision is recorded.
 
@@ -87,7 +87,7 @@ A requirement may initially be written as:
 
 > The system should notify users quickly when an important event occurs.
 
-BridgeIT stores the submitted text as the authoritative requirement until a Business Analyst explicitly edits it.
+BridgeIT stores the submitted text as the authoritative requirement until a Requirements Engineer explicitly edits it.
 
 ## 3. Inspect an existing requirement
 
@@ -144,9 +144,9 @@ After a successful AI analysis, the authoritative requirement status becomes:
 
 This is an important BridgeIT invariant: **the AI analysis does not validate the requirement**.
 
-Even when Gemini indicates that a requirement is ready for validation, a Business Analyst must still review the requirement on the **Validate** page.
+Even when Gemini indicates that a requirement is ready for validation, a Requirements Engineer must still review the requirement on the **Validate** page.
 
-## 5. Record a Business Analyst decision
+## 5. Record a Requirements Engineer decision
 
 Open **Validate**.
 
@@ -160,7 +160,7 @@ Enter the requirement id and choose one of the three available decisions:
 
 ### Approve
 
-Choose **Approve** when the Business Analyst accepts the requirement as written.
+Choose **Approve** when the Requirements Engineer accepts the requirement as written.
 
 The resulting status is:
 
@@ -174,7 +174,7 @@ Example lifecycle:
 
 Choose **Edit** when the requirement needs clarification or improvement.
 
-When **Edit** is selected, the **Edited text** field becomes available. Enter the revised wording and submit the decision.
+Selecting **Edit** reveals the **Edited text** field without sending anything yet. Enter the revised wording and select **Save edited text** to record the decision; an empty text is not sent.
 
 For example:
 
@@ -212,7 +212,7 @@ Enter the same requirement id and select **Look up**.
 Verify that:
 
 - the displayed text is the expected authoritative text;
-- the status reflects the Business Analyst's decision.
+- the status reflects the Requirements Engineer's decision.
 
 For example:
 
@@ -234,7 +234,7 @@ The page explains the main workflow:
 
 1. write a requirement;
 2. request a Gemini quality check;
-3. let a Business Analyst review the result;
+3. let a Requirements Engineer review the result;
 4. check the requirement again whenever needed.
 
 The Guide also contains frequently asked questions about requirement ids, Gemini clarification results, human validation, and edited requirements.
@@ -257,7 +257,7 @@ Gemini cannot:
 - edit the authoritative requirement text by itself;
 - determine the final authoritative requirement status.
 
-Only an explicit Business Analyst action on the **Validate** page can result in `Validated`, `Clarified`, or `Rejected`.
+Only an explicit Requirements Engineer action on the **Validate** page can result in `Validated`, `Clarified`, or `Rejected`.
 
 This separation ensures that AI supports the requirements engineering process without replacing human accountability for validation decisions.
 

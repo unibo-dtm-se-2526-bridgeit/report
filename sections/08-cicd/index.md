@@ -36,7 +36,7 @@ Each job depends on the previous one succeeding.
 
 - **`check` (Preliminary Checks)**: installs Poetry, restores the development environment, then runs `poe compile` (syntax check), `poe static-checks` (Ruff + Mypy), `poe format-check`, and `poe coverage` / `coverage-report` / `coverage-html` (tests with coverage), uploading the HTML coverage report as a build artifact.
 - **`test`**: needs `check`; runs the test suite (`poe test`) across the matrix of `ubuntu-latest` / `windows-latest` / `macos-latest` and Python 3.10–3.13 (12 jobs in parallel), with `fail-fast: false` so one failing combination does not hide results from the others.
-- **`deploy`**: needs `test`; declares `permissions: contents: write, packages: write`, and calls `.github/workflows/deploy.yml` as a reusable workflow (`uses: ./.github/workflows/deploy.yml`, `secrets: inherit`). This inner workflow runs `semantic-release` to compute the next version from Conventional Commits, update `CHANGELOG.md`, build the package, and publish the GitHub Release — or does nothing if the pushed commits do not warrant a release (e.g. a `docs:`-only commit).
+- **`deploy`**: needs `test`; declares `permissions: contents: write, packages: write`, and calls `.github/workflows/deploy.yml` as a reusable workflow (`uses: ./.github/workflows/deploy.yml`, `secrets: inherit`). This inner workflow runs `semantic-release` to compute the next version from Conventional Commits, update `CHANGELOG.md`, build the package, and publish the GitHub Release — or does nothing if the pushed commits do not warrant a release (e.g. only `test:` or `style:` commits); see [Release](../06-release/) for which commit types produce a version bump.
 
 **Two real defects were diagnosed and fixed in this deploy job during development**, not merely anticipated in the abstract:
 
@@ -59,7 +59,7 @@ Unlike a workflow that publishes to a public package index, BridgeIT's release s
 
 Automated dependency updates are handled by **Renovate** (`renovate.json` at the repository root), configured to:
 
-- create dependency update pull requests according to the Renovate configuration, with a concurrent PR limit of 25 and no hourly limit;
+- create dependency update pull requests according to the Renovate configuration, with a concurrent PR limit of 25 and no hourly limit; automatic merging is disabled (`"automerge": false`), so every dependency update goes through the same pull-request review as any other change;
 - open pull requests separately for major, minor, and patch updates (`separateMajorMinor`, `separateMinorPatch`), rather than bundling them;
 - assign opened PRs to the project maintainer (`assignees`), previously misconfigured to the professor's own GitHub username, inherited unnoticed from the course template, and corrected during development;
 - tag GitHub Actions version updates specifically with the `ci` Conventional Commit type (`semanticCommitType`), keeping them distinguishable from dependency updates to the Python/Node packages themselves;

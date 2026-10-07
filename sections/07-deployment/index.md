@@ -21,8 +21,11 @@ If you have Docker installed, this is the fastest path, requiring no local Pytho
 ```bash
 git clone https://github.com/unibo-dtm-se-2526-bridgeit/BridgeIT-artifact.git
 cd BridgeIT-artifact
+export GEMINI_API_KEY=your-key   # Windows PowerShell: $env:GEMINI_API_KEY="your-key"
 docker compose up --build
 ```
+
+Docker Compose passes `GEMINI_API_KEY` from the host shell (or from a `.env` file placed next to `docker-compose.yml`) into the container, and stores the SQLite database in the `./data/` directory, which is created on first start and survives container restarts.
 
 Once the container is running, the API is available at `http://127.0.0.1:8000`, with interactive documentation at `http://127.0.0.1:8000/docs`.
 
@@ -57,7 +60,7 @@ This brings up the API at `http://127.0.0.1:8000`. The accompanying frontend (`w
 
 ### Configuration
 
-Either way, one environment variable must be set before requesting an AI-assisted analysis: `GEMINI_API_KEY`, holding a valid Gemini API key (obtainable for free from Google AI Studio). Its absence does not prevent the application from starting or from submitting/viewing requirements, it is only required, and only checked, at the moment an analysis is actually requested. No other configuration file is needed: the SQLite database file (`bridgeit.db`) is created automatically on first use.
+Either way, one environment variable must be set before requesting an AI-assisted analysis: `GEMINI_API_KEY`, holding a valid Gemini API key (obtainable for free from Google AI Studio). Its absence does not prevent the application from starting or from submitting/viewing requirements, it is only required, and only checked, at the moment an analysis is actually requested. No other configuration file is needed: the SQLite database file (`bridgeit.db` in the repository root, or the path given by the optional `BRIDGEIT_DB_PATH` variable) is created automatically on first use.
 
 ## Virtual environment
 

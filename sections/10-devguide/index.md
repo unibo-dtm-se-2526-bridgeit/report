@@ -12,13 +12,13 @@ If anybody wants to contribute to BridgeIT, the best way is to open an [Issue on
 
 ### Naming
 
-Files and modules are written in `snake_case` (e.g. `sqlite_requirement_repository.py`), while classes use `PascalCase` (e.g. `Requirement`, `SQLiteRequirementRepository`, `GeminiAIGateway`). Unlike some conventions, port interfaces are **not** prefixed with `I` — `RequirementRepository` and `AIGateway`, the two abstract base classes defining the application layer's ports, carry the same plain, descriptive naming as any other class, consistent with typical Python style rather than a C#/Java-style interface prefix. Enumerations combine a `PascalCase` type name with `UPPER_CASE` members (e.g. `RequirementStatus.SUBMITTED`, `RequirementStatus.VALIDATED`, `QualityScore.NEEDS_CLARIFICATION`).
+Files and modules are written in `snake_case` (e.g. `sqlite_requirement_repository.py`), while classes use `PascalCase` (e.g. `Requirement`, `SQLiteRequirementRepository`, `GeminiAIGateway`). Port interfaces are **not** prefixed with `I` — `RequirementRepository` and `AIGateway`, the two abstract base classes defining the application layer's ports, carry the same plain, descriptive naming as any other class, consistent with typical Python style rather than a C#/Java-style interface prefix. Enumerations combine a `PascalCase` type name with `UPPER_CASE` members (e.g. `RequirementStatus.SUBMITTED`, `RequirementStatus.VALIDATED`, `QualityScore.NEEDS_CLARIFICATION`).
 
 ### Code Style
 
-Style and typing are enforced by **Ruff** (linting and formatting) and **Mypy** static type checking, applied equally to both production code and the test suite (`mypy bridgeit tests`), untyped definitions are not relaxed for `tests.*`, unlike some other conventions.
+Style and typing are enforced by **Ruff** (linting and formatting) and **Mypy** static type checking, applied equally to both production code and the test suite (`mypy bridgeit tests`); untyped definitions are not relaxed for `tests.*`.
 
-Unlike some other course projects, BridgeIT does **not** currently have pre-commit or commit-msg hooks installed (no `commitlint`, no `pre-commit` / `husky` setup): Conventional Commits discipline is followed manually by the team and only checked downstream, by `semantic-release`, when a commit reaches `master`, not blocked locally at commit time. This is a known gap, listed as a possible future improvement rather than solved, since introducing it would require additional npm tooling not otherwise needed for local development (see [Future work](../12-future/)).
+BridgeIT does **not** currently have pre-commit or commit-msg hooks installed (no `commitlint`, no `pre-commit` / `husky` setup): Conventional Commits discipline is followed manually by the team and only checked downstream, by `semantic-release`, when a commit reaches `master`, not blocked locally at commit time. This is a known gap, listed as a possible future improvement rather than solved, since introducing it would require additional npm tooling not otherwise needed for local development (see [Future work](../12-future/)).
 
 ### Versioning and Development Workflow
 
