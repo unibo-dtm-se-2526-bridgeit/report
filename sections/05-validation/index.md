@@ -20,7 +20,7 @@ The framework used is **pytest**. It is preferred over the standard library's `u
 
 ## Quality Gate
 
-Coverage is measured with `poetry run poe coverage`, which runs `pytest` with `coverage`, scoped to report only on production code (`bridgeit/`, excluding the test suite itself). The same command runs in the CI pipeline on every push and pull request, together with static analysis (Ruff, Mypy), so no untested or badly-typed code reaches `master`. The generated HTML coverage report is uploaded as a CI build artifact, so results can be inspected for any commit.
+Coverage is measured with `poetry run poe coverage`, which runs `pytest` with `coverage`, scoped to report only on production code (`bridgeit/`, excluding the test suite itself). The same command is executed in the CI pipeline, together with static analysis (Ruff, Mypy), so changes are checked consistently before integration. The generated HTML coverage report is uploaded as a CI build artifact, so results can be inspected for any commit.
 
 ## Automated Testing
 
@@ -31,7 +31,7 @@ Coverage is measured with `poetry run poe coverage`, which runs `pytest` with `c
 
 ### Unit Testing
 
-The suite counts **58 tests**, organized to mirror the production package tree.
+The suite contains **58 automated tests**, organized to mirror the production package tree.
 
 **Domain Layer**
 
@@ -73,14 +73,14 @@ The suite counts **58 tests**, organized to mirror the production package tree.
 | Success rate | 100% |
 | Statement coverage (production code) | 95% |
 
-All 58 tests pass. The HTML coverage report is uploaded as a build artifact by the CI workflow on every run, so the result can be inspected for any commit.
+The latest completed validation run recorded 58 passing tests with no failures and 95% statement coverage of production code. The HTML coverage report is uploaded as a build artifact by the CI workflow, so the result can be inspected for the corresponding commit.
 
 ## Integration testing
 
 Alongside the isolated unit tests above, several tests exercise real collaborating components through their actual interfaces, rather than through test doubles:
 
 - **`SQLiteRequirementRepository` & a real SQLite file**: exercised directly, not through a fake, confirming the adapter's SQL and the real database engine behave as expected together, including across process/instance boundaries.
-- **FastAPI routes & the real dependency-injected repository/AI Gateway wiring**: `TestClient`-based tests exercise the actual routing, middleware, and error-handling configuration of the running application object (`app`), not a simplified stand-in for it.
+- **FastAPI routes with test doubles**: `TestClient`-based tests exercise real routing and error handling. The requirement routes use a real temporary SQLite repository, while the analysis/validation routes are registered against an in-memory repository and a mocked AI Gateway so that external services are not required during automated tests.
 - **Application use cases & the domain**: `AnalyseRequirementUseCase` and `ValidateRequirementUseCase`'s tests exercise real `Requirement` domain objects (not mocked), verifying that the use case's calls into the domain correctly enforce its lifecycle rules — only the AI Gateway or repository (where not the subject of the test) are replaced by test doubles.
 
 ## System testing
