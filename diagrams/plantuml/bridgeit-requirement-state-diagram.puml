@@ -1,0 +1,35 @@
+@startuml
+title BridgeIT - Requirement Lifecycle
+
+skinparam shadowing false
+
+[*] --> Submitted : submit()
+
+Submitted --> Analyzed : analyse /\nmark_analyzed()
+
+Analyzed --> Validated : approve /\nvalidate()
+Analyzed --> Clarified : edit /\nclarify(new_text)
+Analyzed --> Rejected : reject()
+
+Clarified --> Analyzed : re-analyse /\nmark_analyzed()
+
+Validated --> [*]
+Rejected --> [*]
+
+note right of Clarified
+The same Requirement identifier
+is preserved while the current
+RequirementText is replaced.
+
+A clarified requirement must
+be analysed again before another
+human validation decision.
+end note
+
+note right of Analyzed
+AI analysis may produce a quality
+indication, but it cannot produce
+Validated or Rejected autonomously.
+end note
+
+@enduml

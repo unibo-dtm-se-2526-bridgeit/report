@@ -26,7 +26,7 @@ Here are summarised the automated actions in the CI/CD workflow. Actions 1–4 a
 
 The workflow (`.github/workflows/check.yml`) runs on:
 
-- `push`, to any branch except `dependabot/**` and `renovate/**` (avoiding a redundant run on a bot's own branch, since the same change is also tested via its pull request), and ignoring pushes that only touch non-code files (`.gitignore`, `CHANGELOG.md`, `LICENSE`, `README.md`, `renovate.json`, etc.) via `paths-ignore`.
+- `push`, only to `master`, and ignoring pushes that only touch non-code files (`.gitignore`, `CHANGELOG.md`, `LICENSE`, `README.md`, `renovate.json`, etc.) via `paths-ignore`. Restricting branch pushes to `master` avoids executing the same test matrix twice for a feature commit that is already validated through a pull request.
 - `pull_request`, so proposed changes are validated before merge.
 - `workflow_dispatch`, allowing a maintainer to trigger a run manually from the GitHub UI.
 
@@ -35,7 +35,7 @@ The workflow (`.github/workflows/check.yml`) runs on:
 Each job depends on the previous one succeeding.
 
 - **`check` (Preliminary Checks)**: installs Poetry, restores the development environment, then runs `poe compile` (syntax check), `poe static-checks` (Ruff + Mypy), `poe format-check`, and `poe coverage` / `coverage-report` / `coverage-html` (tests with coverage), uploading the HTML coverage report as a build artifact.
-- **`test`**: needs `check`; runs the test suite (`poe test`) across the matrix of `ubuntu-latest` / `windows-latest` / `macos-latest` and Python 3.10–3.13 (12 jobs in parallel), with `fail-fast: false` so one failing combination does not hide results from the others.
+- **`test`**: needs `check`; runs the test suite (`poe test`) across the matrix of `ubuntu-latest` / `windows-latest` / `macos-15-intel` and Python 3.10–3.13 (12 jobs in parallel), with `fail-fast: false` so one failing combination does not hide results from the others.
 - **`deploy`**: needs `test`; declares `permissions: contents: write, packages: write`, and calls `.github/workflows/deploy.yml` as a reusable workflow (`uses: ./.github/workflows/deploy.yml`, `secrets: inherit`). This inner workflow runs `semantic-release` to compute the next version from Conventional Commits, update `CHANGELOG.md`, build the package, and publish the GitHub Release — or does nothing if the pushed commits do not warrant a release (e.g. only `test:` or `style:` commits); see [Release](../06-release/) for which commit types produce a version bump.
 
 **Two real defects were diagnosed and fixed in this deploy job during development**, not merely anticipated in the abstract:
@@ -53,7 +53,7 @@ Unlike a workflow that publishes to a public package index, BridgeIT's release s
 
 - `permissions: contents: write` lets `semantic-release` push the changelog commit and the new tag back to the repository.
 - `permissions: packages: write` is requested for potential GitHub Packages usage.
-- `RELEASE_DRY_RUN`, computed in `deploy.yml`, forces a dry run (no real release side effects) whenever the workflow is not running on `master`/`main`, so pull-request and feature-branch runs can safely exercise the same release logic without actually tagging or publishing anything.
+- `RELEASE_DRY_RUN`, computed in `deploy.yml`, forces a dry run (no real release side effects) whenever the workflow is not running on `master`/`main`, so pull-request runs can safely exercise the same release logic without actually tagging or publishing anything.
 
 ## Dependency automation
 

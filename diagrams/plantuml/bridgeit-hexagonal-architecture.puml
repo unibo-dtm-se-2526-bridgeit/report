@@ -1,0 +1,69 @@
+@startuml
+title BridgeIT - Hexagonal Architecture
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam packageStyle rectangle
+
+actor "User" as User
+
+rectangle "Web Frontend\nHTML / CSS / JavaScript" as Web
+
+rectangle "Driving Adapter" {
+  component "FastAPI API" as API
+}
+
+rectangle "Application" {
+  component "SubmitRequirementUseCase" as SubmitUC
+  component "AnalyseRequirementUseCase" as AnalyseUC
+  component "ValidateRequirementUseCase" as ValidateUC
+
+  interface "RequirementRepository" as RepoPort
+  interface "AIGateway" as AIPort
+}
+
+rectangle "Domain" {
+  component "Requirement" as Requirement
+  component "RequirementText" as RequirementText
+  component "RequirementStatus" as RequirementStatus
+  component "AIAnalysis" as AIAnalysis
+  component "QualityScore" as QualityScore
+}
+
+rectangle "Driven Adapters / Infrastructure" {
+  component "SQLiteRequirementRepository" as SQLiteRepo
+  database "SQLite" as SQLite
+
+  component "GeminiAIGateway" as GeminiGateway
+  cloud "Google Gemini API" as Gemini
+}
+
+User --> Web
+Web --> API : HTTP / JSON
+
+API --> SubmitUC : POST /api/v1/requirements
+API --> AnalyseUC : POST /api/v1/requirements/{id}/analyse
+API --> ValidateUC : POST /api/v1/requirements/{id}/validate
+API --> RepoPort : GET /api/v1/requirements/{id}\ncurrent retrieval shortcut
+
+SubmitUC --> Requirement
+SubmitUC --> RepoPort
+
+AnalyseUC --> Requirement
+AnalyseUC --> RepoPort
+AnalyseUC --> AIPort
+
+ValidateUC --> Requirement
+ValidateUC --> RepoPort
+
+Requirement *-- RequirementText
+Requirement --> RequirementStatus
+AIAnalysis --> QualityScore
+
+RepoPort <|.. SQLiteRepo
+SQLiteRepo --> SQLite
+
+AIPort <|.. GeminiGateway
+GeminiGateway --> Gemini
+
+@enduml

@@ -1,0 +1,46 @@
+@startuml
+title BridgeIT - Requirement Workflow Flow Chart
+
+skinparam shadowing false
+
+start
+
+:Submit natural-language requirement;
+:Persist requirement;
+:Status = Submitted;
+
+repeat
+  :Request AI-assisted analysis;
+
+  if (Requirement eligible\nfor analysis?) then (yes)
+    :Gemini analyses requirement;
+    :Return QualityScore + issues;
+    :Status = Analyzed;
+    :Persist requirement;
+  else (no)
+    :Reject request with\ninvalid state transition;
+    stop
+  endif
+
+  :Human reviews AI analysis;
+
+  if (Human decision?) then (Approve)
+    :Status = Validated;
+    :Persist requirement;
+    stop
+
+  elseif (Reject)
+    :Status = Rejected;
+    :Persist requirement;
+    stop
+
+  else (Edit)
+    :Replace current RequirementText;
+    :Status = Clarified;
+    :Persist requirement;
+  endif
+
+repeat while (Re-analyse clarified requirement?) is (yes)
+
+stop
+@enduml

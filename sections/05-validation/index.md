@@ -31,7 +31,7 @@ Coverage is measured with `poetry run poe coverage`, which runs `pytest` with `c
 
 ### Unit Testing
 
-The suite contains **61 automated tests**, organized to mirror the production package tree.
+The suite contains **63 automated tests**, organized to mirror the production package tree.
 
 **Domain Layer**
 
@@ -59,21 +59,22 @@ The suite contains **61 automated tests**, organized to mirror the production pa
 
 | Module | Tests | What it covers | Requirements |
 |---|---|---|---|
-| `test_requirements_routes.py` | 3 | `POST /requirements`, `GET /requirements/{id}`, the structured 404 error format | FR-01 |
-| `test_analysis_router.py` | 6 | `POST /requirements/{id}/analyse` and `POST /requirements/{id}/validate` (including the structured `404` for an unknown id on both endpoints), with a mocked AI Gateway injected directly | FR-02, FR-05 |
+| `test_requirements_routes.py` | 3 | `POST /api/v1/requirements`, `GET /api/v1/requirements/{id}`, the structured 404 error format | FR-01 |
+| `test_analysis_router.py` | 6 | `POST /api/v1/requirements/{id}/analyse` and `POST /api/v1/requirements/{id}/validate` (including the structured `404` for an unknown id on both endpoints), with a mocked AI Gateway injected directly | FR-02, FR-05 |
 | `test_main_imports_without_key.py` | 1 | The application module imports and starts successfully even when `GEMINI_API_KEY` is not set — the key is only required when an analysis is actually requested, not at startup | NF-07 |
+| `test_api_versioning.py` | 2 | The public OpenAPI contract exposes only the canonical `/api/v1` routes, while the legacy unversioned health endpoint remains available for backward compatibility | API versioning checklist |
 
 ### Results
 
 | Metric | Value |
 |---|---|
-| Total unit + integration tests | 61 |
-| Passing | 61 |
+| Total unit + integration tests | 63 |
+| Passing | 63 |
 | Failing | 0 |
 | Success rate | 100% |
 | Statement coverage (production code) | 96% |
 
-The recorded validation run produced 61 passing tests with no failures and 96% statement coverage of production code. The HTML coverage report is uploaded as a CI build artifact, so the exact result can be inspected for the corresponding run.
+The recorded validation run produced 63 passing tests with no failures and 96% statement coverage of production code. The HTML coverage report is uploaded as a CI build artifact, so the exact result can be inspected for the corresponding run.
 
 ## Integration testing
 
@@ -102,9 +103,9 @@ Manual acceptance testing complements the automated test suite by exercising the
 
 | Requirement | Steps | Expected result |
 |---|---|---|
-| FR-01 | Submit a requirement via `POST /requirements` or the **Create** frontend page with non-empty text | A requirement is created with a unique id and status `Submitted`; retrieving it returns the same stored text |
+| FR-01 | Submit a requirement via `POST /api/v1/requirements` or the **Create** frontend page with non-empty text | A requirement is created with a unique id and status `Submitted`; retrieving it returns the same stored text |
 | FR-01 (error path) | Retrieve a requirement using an id that does not exist | A `404` response is returned using the shared structured error format |
-| FR-02 | Request an analysis for a submitted requirement via `POST /requirements/{id}/analyse` or the **Analyse** frontend page | Gemini returns a quality indication and issues; the requirement status becomes `Analyzed`; the authoritative requirement text is not autonomously modified by the AI |
+| FR-02 | Request an analysis for a submitted requirement via `POST /api/v1/requirements/{id}/analyse` or the **Analyse** frontend page | Gemini returns a quality indication and issues; the requirement status becomes `Analyzed`; the authoritative requirement text is not autonomously modified by the AI |
 | FR-04 | Inspect the AI analysis result | The analysis distinguishes between a requirement that is ready for validation and one that needs clarification |
 | FR-05 — Approve | Submit a human validation decision with `decision: "approve"` | The requirement status becomes `Validated` |
 | FR-05 — Edit | Submit a human validation decision with `decision: "edit"` and a revised requirement text | The revised text is persisted and the requirement status becomes `Clarified` |
@@ -115,6 +116,8 @@ Manual acceptance testing complements the automated test suite by exercising the
 ### Executed end-to-end acceptance session
 
 A manual end-to-end acceptance session was performed on **29 August 2026** against the locally running BridgeIT application.
+
+This recorded session predates the introduction of the explicit `/api/v1` prefix. The unversioned endpoints used during that session remain available as backward-compatible aliases, while the current canonical public API and automated API tests use `/api/v1`.
 
 The FastAPI backend was running at `http://127.0.0.1:8000`, with the Gemini AI gateway enabled, and the frontend was served at `http://127.0.0.1:5500`.
 

@@ -1,0 +1,42 @@
+@startuml
+title BridgeIT - Use Case Diagram
+
+left to right direction
+skinparam shadowing false
+
+actor "Business Stakeholder" as Stakeholder
+actor "Requirements Engineer" as RE
+actor "Software Engineer" as SE
+
+rectangle "BridgeIT - Current Release Scope" {
+  usecase "Submit requirement" as UC1
+  usecase "Analyse requirement" as UC2
+  usecase "Revise requirement" as UC3
+  usecase "View quality indication" as UC4
+  usecase "Approve / Edit /\nReject requirement" as UC5
+}
+
+Stakeholder --> UC1
+Stakeholder --> UC3
+Stakeholder --> UC5
+
+RE --> UC2
+RE --> UC3
+RE --> UC4
+RE --> UC5
+
+rectangle "Planned Future Scope" {
+  usecase "Inspect traceability links" as UC6
+  usecase "Create derived artifact" as UC7
+}
+
+SE --> UC6
+SE --> UC7
+
+note bottom of UC6
+FR-06 and FR-07 are planned
+extensions and are not implemented
+in release 1.1.0.
+end note
+
+@enduml

@@ -71,6 +71,8 @@ The application uses HTTP as its application-level communication protocol.
 
 The browser frontend communicates with the FastAPI backend through HTTP requests. HTTP was selected because BridgeIT exposes resource-oriented operations such as creating, retrieving, analysing, and validating a Requirement, and because it is directly supported by browsers, FastAPI, testing tools, and OpenAPI documentation.
 
+The canonical public HTTP contract is explicitly versioned under `/api/v1`. FastAPI generates the corresponding OpenAPI description, and a versioned snapshot is stored in the artifact repository as `openapi/v1/openapi.json`. The previous unversioned routes are retained only as backward-compatible aliases and are excluded from the public OpenAPI schema.
+
 HTTP itself runs over TCP, which provides reliable and ordered delivery. BridgeIT does not currently require low-latency datagrams, bidirectional streaming, message queues, or publish/subscribe communication; therefore UDP, WebSockets, MQTT, AMQP, and similar protocols would add complexity without addressing a present requirement.
 
 The backend also communicates with the external Gemini service through HTTPS as handled by the `google-genai` client. HTTPS is required for external communication because requirement text and provider credentials must not be transmitted in plaintext. Local development may use plain HTTP on the loopback interface, while any non-local deployment should use HTTPS.
@@ -92,7 +94,7 @@ The API uses a common error representation:
 }
 ```
 
-The `ApiError` contract is applied to `GET /requirements/{id}` and to the analysis and validation endpoints. A shared error structure keeps frontend handling consistent and prevents each endpoint from inventing a different response shape.
+The `ApiError` contract is applied to `GET /api/v1/requirements/{id}` and to the analysis and validation endpoints. A shared error structure keeps frontend handling consistent and prevents each endpoint from inventing a different response shape.
 
 The Gemini adapter translates provider-specific responses into BridgeIT domain concepts. Provider response formats are therefore confined to the driven adapter and are not exposed directly to the domain or frontend.
 
@@ -174,7 +176,7 @@ FastAPI is used at the driving-adapter boundary, and Pydantic is used for the AP
 - **Poetry** manages Python dependencies and the project environment.
 - **Poe the Poet** exposes repeatable project commands on top of Poetry.
 
-The current test suite contains 61 automated tests; their distribution, success rate, and coverage are reported in the [Validation](../05-validation/) section.
+The current test suite contains 63 automated tests; their distribution, success rate, and coverage are reported in the [Validation](../05-validation/) section.
 
 ### Frontend
 
