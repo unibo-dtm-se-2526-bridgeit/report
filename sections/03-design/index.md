@@ -33,6 +33,8 @@ The application layer therefore acts as the coordination point between the domai
 
 ![BridgeIT hexagonal architecture](../../pictures/bridgeit-hexagonal-architecture.png)
 
+PlantUML source: [`bridgeit-hexagonal-architecture.puml`](../../diagrams/plantuml/bridgeit-hexagonal-architecture.puml).
+
 The diagram shows the four layers as concentric regions: the FastAPI driving adapter calls the application use cases, which work on the domain model and reach persistence and the AI provider only through the `RequirementRepository` and `AIGateway` ports, implemented by the SQLite and Gemini driven adapters.
 
 ### Responsibilities of each component
@@ -83,6 +85,15 @@ After being validated or rejected, a requirement reaches a final state. A clarif
 
 The `RequirementRepository` is the only persistence abstraction used by the application. It has two implementations: `SQLiteRequirementRepository` for the actual application and an in-memory fake used by tests.
 
+
+### DDD services, factories, and model integrity
+
+The current bounded context does not require a separate **Domain Service**. The business rules that determine whether a Requirement can be analysed, clarified, validated, or rejected naturally belong to the `Requirement` aggregate itself. Application use cases such as `AnalyseRequirementUseCase` and `ValidateRequirementUseCase` coordinate repositories and external ports, but they do not contain independent domain rules. Introducing a separate domain service for these operations would therefore add indirection without representing an additional domain concept.
+
+Requirement creation is handled through `Requirement.submit(text)`, which acts as a **factory method** for the aggregate. It creates the identifier, validates the `RequirementText`, and guarantees that every newly created Requirement starts in the `Submitted` state. A separate factory class is unnecessary because creation is simple and its invariant belongs directly to the aggregate.
+
+**Model integrity** is preserved by keeping the Requirement lifecycle rules inside the Requirement Lifecycle bounded context and by isolating external concepts behind ports. Gemini-specific SDK types and response formats do not enter the domain model: `GeminiAIGateway` translates them into the domain-facing `AIAnalysis` and `QualityScore` concepts. Persistence is likewise accessed through `RequirementRepository`, preventing database-specific representations from leaking into the domain. These boundaries preserve the ubiquitous language and keep infrastructure concerns outside the core model.
+
 ### Object-oriented modelling
 
 | Type                          | Kind                    | Role                                                                                        |
@@ -103,6 +114,8 @@ The `RequirementRepository` is the only persistence abstraction used by the appl
 
 ![BridgeIT domain model and ports](../../pictures/bridgeit-domain-class-diagram.png)
 
+PlantUML source: [`bridgeit-domain-class-diagram.puml`](../../diagrams/plantuml/bridgeit-domain-class-diagram.puml).
+
 The class diagram summarises the table above: `Requirement` is the aggregate root and owns its `RequirementText` and `RequirementStatus`; `AIAnalysis` is a separate immutable value object returned by the `AIGateway` port; the two ports are realised by the infrastructure adapters.
 
 ### In case of a distributed system
@@ -117,7 +130,7 @@ All application interactions are synchronous request/response operations over HT
 
 The main analysis flow is initiated through:
 
-`POST /requirements/{id}/analyse`
+`POST /api/v1/requirements/{id}/analyse`
 
 The interaction proceeds as follows:
 
@@ -135,11 +148,13 @@ The AI result is therefore returned to the client, while the authoritative requi
 
 ![Sequence diagram of the analyse interaction](../../pictures/bridgeit-analyse-sequence-diagram.png)
 
+PlantUML source: [`bridgeit-analyse-sequence-diagram.puml`](../../diagrams/plantuml/bridgeit-analyse-sequence-diagram.puml).
+
 ### Validate a requirement
 
 Human validation is initiated through:
 
-`POST /requirements/{id}/validate`
+`POST /api/v1/requirements/{id}/validate`
 
 The interaction proceeds as follows:
 
@@ -164,13 +179,30 @@ When an invalid transition is attempted, the domain raises `InvalidStateTransiti
 
 ![Requirement lifecycle state diagram](../../pictures/bridgeit-requirement-state-diagram.png)
 
+PlantUML source: [`bridgeit-requirement-state-diagram.puml`](../../diagrams/plantuml/bridgeit-requirement-state-diagram.puml).
+
 The state diagram distinguishes the two kinds of transition: an AI analysis can only move a requirement to `Analyzed`, while `Validated`, `Rejected`, and `Clarified` can be reached only through an explicit human decision. `Validated` and `Rejected` are final states.
+
+
+### End-to-end requirement workflow
+
+The following flow chart complements the state diagram by showing the operational decision flow from submission through AI-assisted analysis and explicit human review. If the human reviewer edits the requirement, the current text is replaced, the requirement enters `Clarified`, and it must be analysed again before another final validation decision can be recorded.
+
+![BridgeIT requirement workflow flow chart](../../pictures/bridgeit-requirement-flowchart.png)
+
+The PlantUML source used to generate and validate this diagram is versioned in [`diagrams/plantuml/bridgeit-requirement-flowchart.puml`](../../diagrams/plantuml/bridgeit-requirement-flowchart.puml).
 
 The `GeminiAIGateway` is functionally stateless between requests. It includes retry logic for selected transient failures, specifically rate limiting (`429`) and service unavailability (`503`), while non-retryable errors such as authentication failures are returned immediately.
 
 State updates are synchronous: the requirement is updated and persisted during the same request that performs the corresponding use case operation. There is no background worker, asynchronous job queue, or event-driven mechanism.
 
 ## Data-related aspects
+
+The following data-flow diagram shows how requirement data moves through the frontend, FastAPI adapter, application layer, domain model, SQLite persistence, and external Gemini service. It also makes the persistence boundary explicit: the current Requirement state is stored, whereas `AIAnalysis` is returned to the client but is not persisted.
+
+![BridgeIT data-flow diagram](../../pictures/bridgeit-data-flow-diagram.png)
+
+The PlantUML source used to generate and validate this diagram is versioned in [`diagrams/plantuml/bridgeit-data-flow-diagram.puml`](../../diagrams/plantuml/bridgeit-data-flow-diagram.puml).
 
 Persistent data is intentionally minimal. A single SQLite table stores the current state of each requirement:
 
@@ -196,6 +228,6 @@ SQLite was implemented using the standard-library `sqlite3` module instead of an
 
 The persistence adapter is the only component that directly queries the SQLite database. The application layer depends only on the `RequirementRepository` abstraction.
 
-The current implementation contains a small architectural shortcut in the requirement retrieval endpoint: `GET /requirements/{id}` accesses the repository directly instead of using a dedicated retrieval use case. This does not affect the domain rules, but it represents a minor technical-debt item that could be refactored in a future iteration.
+The current implementation contains a small architectural shortcut in the requirement retrieval endpoint: `GET /api/v1/requirements/{id}` accesses the repository directly instead of using a dedicated retrieval use case. This does not affect the domain rules, but it represents a minor technical-debt item that could be refactored in a future iteration.
 
 Concurrency is delegated to SQLite's own locking mechanism. Given the scope of the project, which assumes a single local instance and one primary Requirements Engineer at a time, no additional concurrency infrastructure is required.

@@ -1,0 +1,52 @@
+@startuml
+title BridgeIT - Analyse Requirement Sequence
+
+skinparam shadowing false
+skinparam sequenceMessageAlign center
+
+actor "Requirements Engineer" as User
+participant "Web UI" as UI
+participant "FastAPI" as API
+participant "AnalyseRequirementUseCase" as UC
+participant "RequirementRepository" as Repo
+participant "Requirement" as Req
+participant "AIGateway" as AIGateway
+participant "GeminiAIGateway" as GeminiGateway
+participant "Google Gemini API" as Gemini
+
+User -> UI : Request analysis
+UI -> API : POST /api/v1/requirements/{id}/analyse
+API -> UC : execute(requirement_id)
+
+UC -> Repo : get_by_id(requirement_id)
+Repo --> UC : Requirement
+
+UC -> Req : ensure_can_be_analyzed()
+
+alt invalid lifecycle state
+  Req --> UC : InvalidStateTransitionError
+  UC --> API : error
+  API --> UI : HTTP 409
+  UI --> User : Invalid transition
+
+else eligible for analysis
+  Req --> UC : allowed
+
+  UC -> AIGateway : analyse(requirement.text)
+  AIGateway -> GeminiGateway : implementation
+  GeminiGateway -> Gemini : analysis request
+  Gemini --> GeminiGateway : provider response
+  GeminiGateway --> UC : AIAnalysis
+
+  UC -> Req : mark_analyzed()
+  Req --> UC : status = Analyzed
+
+  UC -> Repo : save(requirement_id, requirement)
+  Repo --> UC : persisted
+
+  UC --> API : AIAnalysis
+  API --> UI : status + quality indication + issues
+  UI --> User : Display analysis
+end
+
+@enduml

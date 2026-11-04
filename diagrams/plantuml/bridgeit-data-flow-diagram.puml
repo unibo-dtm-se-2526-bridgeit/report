@@ -1,0 +1,45 @@
+@startuml
+title BridgeIT - Data Flow Diagram
+
+skinparam shadowing false
+skinparam componentStyle rectangle
+
+actor "Business Stakeholder /\nRequirements Engineer" as User
+
+rectangle "Web Frontend" as UI
+rectangle "FastAPI Adapter" as API
+rectangle "Application Use Cases" as App
+rectangle "Requirement Domain Model" as Domain
+database "SQLite\nrequirements table" as DB
+rectangle "AIGateway" as AIGateway
+cloud "Google Gemini API" as Gemini
+
+User --> UI : requirement text /\nrequirement id /\nhuman decision
+
+UI --> API : HTTP + JSON
+
+API --> App : validated request data
+
+App --> Domain : create / analyse /\nclarify / validate / reject
+
+Domain --> App : requirement id,\ntext, lifecycle status
+
+App --> DB : save / retrieve\nid + text + status
+DB --> App : persisted requirement
+
+App --> AIGateway : requirement text
+AIGateway --> Gemini : analysis request
+Gemini --> AIGateway : AI response
+AIGateway --> App : AIAnalysis\nquality indication + issues
+
+App --> API : operation result
+API --> UI : JSON response
+UI --> User : requirement state /\nquality feedback
+
+note bottom of DB
+Only the current requirement
+id, text and status are persisted.
+AIAnalysis is not persisted.
+end note
+
+@enduml

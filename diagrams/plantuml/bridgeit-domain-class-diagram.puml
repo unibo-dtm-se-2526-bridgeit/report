@@ -1,0 +1,75 @@
+@startuml
+title BridgeIT - Domain Model and Ports
+
+skinparam shadowing false
+skinparam classAttributeIconSize 0
+
+class Requirement {
+  - _id: str
+  - _text: RequirementText
+  - _status: RequirementStatus
+  + submit(text: str): Requirement
+  + ensure_can_be_analyzed(): void
+  + mark_analyzed(): void
+  + clarify(new_text: str): void
+  + validate(): void
+  + reject(): void
+}
+
+class RequirementText <<value object>> {
+  + content: str
+}
+
+enum RequirementStatus {
+  Submitted
+  Analyzed
+  Clarified
+  Validated
+  Rejected
+}
+
+class AIAnalysis <<value object>> {
+  + quality_score: QualityScore
+  + issues: tuple[str, ...]
+}
+
+enum QualityScore {
+  ready_for_validation
+  needs_clarification
+}
+
+interface RequirementRepository {
+  + save(requirement_id, requirement): void
+  + get_by_id(requirement_id): Requirement
+}
+
+interface AIGateway {
+  + analyse(requirement_text): AIAnalysis
+}
+
+class SubmitRequirementUseCase
+class AnalyseRequirementUseCase
+class ValidateRequirementUseCase
+
+class SQLiteRequirementRepository
+class GeminiAIGateway
+
+Requirement *-- RequirementText
+Requirement --> RequirementStatus
+AIAnalysis --> QualityScore
+
+SubmitRequirementUseCase --> Requirement
+SubmitRequirementUseCase --> RequirementRepository
+
+AnalyseRequirementUseCase --> Requirement
+AnalyseRequirementUseCase --> RequirementRepository
+AnalyseRequirementUseCase --> AIGateway
+AnalyseRequirementUseCase --> AIAnalysis
+
+ValidateRequirementUseCase --> Requirement
+ValidateRequirementUseCase --> RequirementRepository
+
+RequirementRepository <|.. SQLiteRequirementRepository
+AIGateway <|.. GeminiAIGateway
+
+@enduml

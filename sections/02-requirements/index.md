@@ -13,26 +13,40 @@ nav_order: 3
 - As a Business Stakeholder or Requirements Engineer, I want to revise a requirement's wording after an analysis has surfaced an issue, so that the requirement can be improved before validation.
 - As a Requirements Engineer, I want to see a quality indication for a requirement, so that I can decide whether it needs further clarification.
 - As a Business Stakeholder or Requirements Engineer, I want to explicitly approve, edit, or reject a requirement after reviewing the AI analysis, so that no interpretation of my requirement becomes authoritative without my consent.
+
+### Planned future user stories
+
+The following user stories describe planned extensions and are **not part of the implemented scope of release 1.1.0**:
+
 - As a Software Engineer, I want to inspect which artifacts are linked to a given requirement, so that I understand the origin of what I am implementing.
 - As a Software Engineer, I want to create a derived artifact from a validated requirement, so that I can begin implementation work with a clear, traceable link back to its source.
 
 ![BridgeIT Use Case Diagram](../../pictures/bridgeit-use-case-diagram.png)
 
+PlantUML source: [`bridgeit-use-case-diagram.puml`](../../diagrams/plantuml/bridgeit-use-case-diagram.puml).
+
+The diagram documents both the implemented core workflow and the planned extension points described above.
+
 ## Requirements analysis
 
-### Functional
+### Functional — current release scope
 
 - FR-01: the user must be able to submit a requirement expressed in natural language, having it stored as a structured, persistent artifact with a unique identifier
 - FR-02: the system must use the AI Gateway to analyze a submitted requirement's text and identify potential quality issues (ambiguity, incompleteness)
 - FR-03: the user must be able to revise a requirement's wording after an analysis has surfaced an issue, keeping the same identifier across the revision
 - FR-04: the system must produce a quality indication for a requirement, distinguishing at least "ready for validation" from "needs clarification"
 - FR-05: the user must explicitly approve, edit, or reject the requirement after reviewing the AI analysis, before the human decision can affect the requirement's authoritative state
+
+### Planned future functional requirements
+
+The following requirements are retained as documented extension goals, but are **not part of the Definition of Done for release 1.1.0**:
+
 - FR-06: the user must be able to create and inspect traceability links between a requirement and the artifacts derived from it
 - FR-07: the user must be able to create a derived, structured artifact from a validated requirement, preserving its link to the source requirement
 
-> **Implementation status.** FR-01–FR-05 are implemented in the current artifact. FR-06 and FR-07 remain planned extensions and are not implemented in the current application, API, or persistence layers; they are discussed in the [Future work](../12-future/) section. The same applies to the last two user stories above.
+They are discussed further in [Future work](../12-future/).
 
-### Non-functional
+### Non-functional — current release scope
 
 - NF-01: changes to one concern (e.g. persistence, AI provider) must not require changes to unrelated parts of the system
 - NF-02: domain and application logic must be verifiable through automated tests independently of external infrastructure
@@ -43,7 +57,12 @@ nav_order: 3
 - NF-07: failures in an external dependency (e.g. AI provider unavailability) must not corrupt or lose previously stored requirement data
 - NF-08: failures in external dependencies must surface a clear, actionable indication rather than an unhandled failure
 - NF-09: environment-specific settings (e.g. AI provider credentials) must be externalized from the codebase
-- NF-10: significant domain events must be logged to support debugging, without logging sensitive content in plaintext
+
+### Planned future non-functional requirement
+
+- NF-10: significant domain events should be logged to support debugging, without logging sensitive content in plaintext
+
+NF-10 is a documented future improvement and is not part of the release 1.1.0 Definition of Done.
 
 ### Implementation
 
@@ -61,15 +80,33 @@ All other technical choices (`sqlite3` over an ORM, vanilla HTML/CSS/JavaScript 
 - **Quality Indication**: a non-binding assessment of a requirement's clarity, completeness, and freedom from ambiguity, intended to guide — not replace — human judgment
 - **Validation**: the explicit human decision (approve, edit, or reject) required before an AI suggestion can affect a requirement's authoritative state
 
-## Acceptance Criteria for the requirements
+## Acceptance Criteria and Definition of Done
 
-- FR-01: given a non-empty description, submitting it stores a requirement with a unique identifier and an initial status; retrieving it later returns the stored text unchanged
-- FR-02: given a requirement eligible for analysis, requesting one produces an AI analysis associated with its identifier; the requirement text is not autonomously modified by the AI and the requirement moves to `Analyzed`
-- FR-03: revising a requirement's text keeps its identifier unchanged; the current revised text is retrievable under the same identifier, while previous text revisions are not retained as history
-- FR-04: a quality indication distinguishes at least "ready for validation" from "needs clarification"; producing one moves an eligible requirement to `Analyzed` but does not constitute a human validation decision
-- FR-05: an AI analysis awaiting review does not itself produce a final requirement state; after a human decision is recorded, the resulting state is retrievable together with the requirement
-- FR-06: a traceability link between a requirement and a derived artifact is retrievable by querying either side of the relationship
-- FR-07: an artifact created from a requirement whose status is "Validated" retains an explicit reference to it; creation is refused for a requirement not yet Validated
-- NF-01–NF-09: assessed through automated tests where applicable at the domain, application, infrastructure, and API layers (see Validation section), together with manual inspection of module boundaries and configuration; NF-10 is currently not implemented and is treated as future work
-- I1: the persistence adapter connects to and correctly reads/writes a SQLite database file, verified by integration tests
-- I2: the frontend is reachable through a standard web browser and successfully completes the full requirement lifecycle against the running API
+The following criteria define when each requirement in the **current release scope** is considered done. Evidence for these criteria is documented in the [Validation](../05-validation/) chapter.
+
+| Requirement | Definition of Done |
+|---|---|
+| **FR-01** | A non-empty requirement can be submitted, receives a unique identifier and `Submitted` status, is persisted, and can later be retrieved with the same text. |
+| **FR-02** | An eligible requirement can be analysed through the `AIGateway`; an `AIAnalysis` is returned, the authoritative text is not autonomously changed, and the requirement moves to `Analyzed`. |
+| **FR-03** | An analysed requirement can be edited while preserving its identifier; the revised text is persisted and the requirement moves to `Clarified`. |
+| **FR-04** | AI analysis returns either `ready_for_validation` or `needs_clarification`; this indication does not itself constitute a final human decision. |
+| **FR-05** | A human can explicitly approve, edit, or reject an analysed requirement; the corresponding lifecycle state is persisted and retrievable. |
+| **NF-01** | Persistence and AI-provider concerns remain behind ports, so infrastructure implementations can change without modifying the domain model. |
+| **NF-02** | Domain and application behavior is covered by automated tests that can run with fakes/mocks and without external infrastructure. |
+| **NF-03** | Source modules have explicit domain, application, adapter, and infrastructure responsibilities consistent with the documented Hexagonal Architecture. |
+| **NF-04** | AI-provider access occurs through `AIGateway`; provider-specific Gemini code remains confined to the infrastructure adapter. |
+| **NF-05** | `GEMINI_API_KEY` is supplied through the environment and is not embedded in the source code or committed configuration. |
+| **NF-06** | Extension points are represented by explicit ports and modular boundaries so additional adapters or capabilities can be added without restructuring the existing core. |
+| **NF-07** | AI-provider failures do not overwrite or corrupt a previously persisted requirement; failure behavior is exercised by automated tests. |
+| **NF-08** | External dependency failures are translated into controlled application/API errors instead of unhandled failures. |
+| **NF-09** | Environment-specific configuration, including the Gemini credential, is externalized from application source code. |
+| **I1** | The SQLite persistence adapter successfully stores and retrieves requirements using a real SQLite database in integration tests. |
+| **I2** | The browser frontend can execute the implemented Requirement → AI Analysis → Human Validation workflow against the running API. |
+
+### Future-scope intended acceptance criteria
+
+These criteria document the intended behavior of the planned extensions but are **not acceptance criteria for release 1.1.0**:
+
+- **FR-06:** a traceability link between a requirement and a derived artifact should be retrievable from either side of the relationship.
+- **FR-07:** an artifact created from a `Validated` requirement should retain an explicit reference to its source; creation should be refused for requirements that are not validated.
+- **NF-10:** significant domain events should be recorded without logging sensitive requirement content in plaintext.
